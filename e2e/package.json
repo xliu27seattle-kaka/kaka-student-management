@@ -1,0 +1,13 @@
+{
+  "name": "kaka-student-management-e2e",
+  "private": true,
+  "description": "End-to-end tests that drive the running stack in a real browser.",
+  "scripts": {
+    "test": "playwright test",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.65.1",
+    "@types/node": "^24.0.0"
+  }
+}

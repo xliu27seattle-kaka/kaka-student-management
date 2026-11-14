@@ -1,0 +1,336 @@
+:host {
+  --on-photo: #f6f3ec;
+  --on-photo-2: rgba(246, 243, 236, 0.82);
+  --pad: clamp(16px, 4vw, 56px);
+  display: block;
+}
+
+.entry {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 400px);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    'brand card'
+    'hello card'
+    'foot foot';
+  column-gap: clamp(24px, 5vw, 72px);
+  row-gap: 24px;
+  padding: var(--pad);
+  color: var(--on-photo);
+  background: #0e1512;
+}
+
+/* ── the photograph and what lies over it ── */
+.bg,
+.tint,
+.scrim,
+.grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.bg {
+  z-index: -4;
+  overflow: hidden;
+
+  img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transform: scale(1.05);
+    transition: opacity 2s ease-in-out;
+
+    &.on {
+      opacity: 1;
+      animation: drift 26s linear forwards;
+    }
+
+    &.alt.on {
+      animation-name: drift-back;
+    }
+  }
+}
+
+@keyframes drift {
+  from {
+    transform: scale(1.05) translate3d(0, 0, 0);
+  }
+  to {
+    transform: scale(1.16) translate3d(-1.6%, -1.2%, 0);
+  }
+}
+
+@keyframes drift-back {
+  from {
+    transform: scale(1.16) translate3d(1.6%, -0.8%, 0);
+  }
+  to {
+    transform: scale(1.05) translate3d(0, 0, 0);
+  }
+}
+
+/* A colour wash for the visitor's time of day. */
+.tint {
+  z-index: -3;
+  mix-blend-mode: soft-light;
+  opacity: 0;
+}
+
+[data-time='dawn'] .tint {
+  background: #ffb27a;
+  opacity: 0.38;
+}
+
+[data-time='dusk'] .tint {
+  background: #ff7a3d;
+  opacity: 0.5;
+}
+
+[data-time='night'] {
+  .tint {
+    background: #16306e;
+    opacity: 0.62;
+    mix-blend-mode: multiply;
+  }
+
+  .bg img {
+    filter: brightness(0.82) saturate(0.85);
+  }
+}
+
+/* Darkens only where the text sits (left and bottom); the photograph stays open elsewhere. */
+.scrim {
+  z-index: -2;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(10, 16, 13, 0.5) 0%,
+      rgba(10, 16, 13, 0.1) 26%,
+      rgba(10, 16, 13, 0.28) 56%,
+      rgba(10, 16, 13, 0.82) 100%
+    ),
+    linear-gradient(
+      100deg,
+      rgba(10, 16, 13, 0.62) 0%,
+      rgba(10, 16, 13, 0.3) 38%,
+      rgba(10, 16, 13, 0) 66%
+    );
+}
+
+.grain {
+  z-index: -1;
+  opacity: 0.06;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ── content ── */
+.brand {
+  grid-area: brand;
+  align-self: start;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  animation: rise 0.9s var(--ease) both;
+
+  b {
+    display: block;
+    font: 700 14px/20px var(--font);
+  }
+
+  small {
+    display: block;
+    font: 500 12px/16px var(--font);
+    color: var(--on-photo-2);
+  }
+}
+
+.brand-mark {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--paper);
+  color: var(--accent);
+  display: grid;
+  place-items: center;
+  font: 800 16px/1 var(--font);
+  flex: none;
+}
+
+.hello {
+  grid-area: hello;
+  align-self: end;
+  min-width: 0;
+
+  h1 {
+    font: 800 clamp(44px, 7.4vw, 112px) / 0.92 var(--font);
+    letter-spacing: -0.05em;
+    overflow-wrap: anywhere;
+    text-wrap: balance;
+    animation: rise 1s var(--ease) both 0.1s;
+  }
+
+  p {
+    margin-top: clamp(12px, 1.6vw, 20px);
+    max-width: 460px;
+    font: 500 clamp(16px, 1.4vw, 18px) / 1.55 var(--font);
+    color: var(--on-photo-2);
+    text-wrap: pretty;
+    animation: rise 1s var(--ease) both 0.22s;
+  }
+}
+
+.cap {
+  margin-top: clamp(20px, 3vw, 36px);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  animation: rise 1s var(--ease) both 0.34s;
+}
+
+.cap-text {
+  font: 500 12px/16px var(--font-mono);
+  color: var(--on-photo-2);
+}
+
+.dots {
+  display: flex;
+  gap: 6px;
+
+  button {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    border-radius: 6px;
+
+    &:focus-visible {
+      outline: 2px solid var(--on-photo);
+      outline-offset: 2px;
+    }
+
+    i {
+      display: block;
+      width: 18px;
+      height: 3px;
+      border-radius: 2px;
+      background: rgba(246, 243, 236, 0.38);
+      transform-origin: left;
+      transition:
+        background-color 0.3s ease-in-out,
+        transform 0.5s var(--ease);
+    }
+
+    &.on i {
+      background: var(--on-photo);
+      transform: scaleX(1.4);
+    }
+  }
+}
+
+.card {
+  grid-area: card;
+  align-self: center;
+  width: 100%;
+  background: var(--paper);
+  color: var(--ink-1);
+  border-radius: var(--radius-lg);
+  padding: clamp(20px, 2.4vw, 32px);
+  box-shadow:
+    0 50px 100px -50px rgba(4, 10, 7, 0.9),
+    0 0 0 1px rgba(255, 255, 255, 0.08);
+  animation: rise 1s var(--ease) both 0.3s;
+}
+
+.foot {
+  grid-area: foot;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  font: 500 12px/16px var(--font);
+  color: var(--on-photo-2);
+
+  .studio-mark {
+    color: var(--on-photo);
+  }
+}
+
+/* Narrower than a laptop: one column, with the photograph still visible above the card. */
+@media (max-width: 960px) {
+  .entry {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(28vh, 1fr) auto auto;
+    grid-template-areas:
+      'brand'
+      'hello'
+      'card'
+      'foot';
+  }
+
+  .card {
+    justify-self: center;
+    max-width: 460px;
+  }
+
+  .scrim {
+    background: linear-gradient(
+      180deg,
+      rgba(10, 16, 13, 0.5) 0%,
+      rgba(10, 16, 13, 0.16) 22%,
+      rgba(10, 16, 13, 0.62) 58%,
+      rgba(10, 16, 13, 0.88) 100%
+    );
+  }
+}
+
+@media (max-width: 560px) {
+  .hello p {
+    display: none;
+  }
+
+  .cap {
+    margin-top: 12px;
+  }
+
+  .card {
+    border-radius: 20px;
+  }
+
+  .foot {
+    justify-content: center;
+    text-align: center;
+  }
+}
+
+/* A short window: shrink the greeting instead of pushing the card off screen. */
+@media (max-height: 720px) and (min-width: 961px) {
+  .hello h1 {
+    font-size: clamp(40px, 9vh, 72px);
+  }
+
+  .hello p {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bg img.on {
+    animation: none;
+    transform: scale(1.05);
+  }
+}

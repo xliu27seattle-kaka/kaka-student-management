@@ -1,0 +1,39 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: notification-service
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  health:
+    mail:
+      enabled: false
+
+app:
+  # Shared secret the backend sends in the X-Internal-Key header.
+  internal-api-key: ${INTERNAL_API_KEY:kaka-internal-dev-key}
+  mail:
+    from: ${MAIL_FROM:no-reply@kaka-sms.example}
+    from-name: Kaka Student Management
+    # Real delivery. Defaults point at the local inbox, so nothing leaves the machine
+    # until MAIL_* is set (see .env.example).
+    primary:
+      host: ${MAIL_HOST:mailbox}
+      port: ${MAIL_PORT:1025}
+      username: ${MAIL_USERNAME:}
+      password: ${MAIL_PASSWORD:}
+      auth: ${MAIL_SMTP_AUTH:false}
+      starttls: ${MAIL_STARTTLS:false}
+    # Recipients on reserved test domains always go here, even when real delivery is on.
+    sandbox:
+      host: ${SANDBOX_MAIL_HOST:mailbox}
+      port: ${SANDBOX_MAIL_PORT:1025}
+      username: ""
+      password: ""
+      auth: false
+      starttls: false

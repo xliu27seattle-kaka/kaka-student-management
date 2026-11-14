@@ -1,0 +1,83 @@
+@let state = (state$ | async)!;
+@let showPassword = (showPassword$ | async) ?? false;
+
+<app-entry-layout>
+  <form class="auth-card" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <header>
+      <h2>Sign in</h2>
+      <p>Use the email you registered with.</p>
+    </header>
+
+    @if (state.error) {
+      <div class="alert alert-error" role="alert">
+        <i class="ph ph-warning-circle" aria-hidden="true"></i>
+        <span>{{ state.error }}</span>
+      </div>
+    }
+
+    <div class="field">
+      <label for="login-email">Email</label>
+      <div class="input">
+        <i class="ph ph-envelope-simple" aria-hidden="true"></i>
+        <input
+          id="login-email"
+          type="email"
+          formControlName="email"
+          autocomplete="username"
+          placeholder="name@example.edu"
+          [attr.aria-invalid]="invalid('email')"
+          [attr.aria-describedby]="invalid('email') ? 'login-email-error' : null"
+        />
+      </div>
+      @if (invalid('email')) {
+        <span class="field-error" id="login-email-error">Enter a valid email address.</span>
+      }
+    </div>
+
+    <div class="field">
+      <label for="login-password">Password</label>
+      <div class="input has-action">
+        <i class="ph ph-lock-simple" aria-hidden="true"></i>
+        <input
+          id="login-password"
+          [type]="showPassword ? 'text' : 'password'"
+          formControlName="password"
+          autocomplete="current-password"
+          placeholder="Your password"
+          [attr.aria-invalid]="invalid('password')"
+          [attr.aria-describedby]="invalid('password') ? 'login-password-error' : null"
+        />
+        <button
+          class="input-action"
+          type="button"
+          [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
+          [attr.aria-pressed]="showPassword"
+          (click)="togglePassword()"
+        >
+          <i class="ph" [class.ph-eye]="!showPassword" [class.ph-eye-slash]="showPassword"></i>
+        </button>
+      </div>
+      @if (invalid('password')) {
+        <span class="field-error" id="login-password-error">Enter your password.</span>
+      }
+    </div>
+
+    <button class="btn btn-primary" type="submit" [disabled]="state.submitting">
+      {{ state.submitting ? 'Signing in' : 'Sign in' }}
+      <i class="ph ph-arrow-right" aria-hidden="true"></i>
+    </button>
+
+    <p class="meta">New student? <a class="link" routerLink="/register">Create an account</a></p>
+
+    <div class="demo">
+      <span>Demo accounts, click to fill</span>
+      <div class="chips">
+        @for (account of demoAccounts; track account.email) {
+          <button class="chip" type="button" (click)="fill(account)">
+            <i class="ph" [class]="account.icon" aria-hidden="true"></i>{{ account.label }}
+          </button>
+        }
+      </div>
+    </div>
+  </form>
+</app-entry-layout>

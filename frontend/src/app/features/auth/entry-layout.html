@@ -1,0 +1,59 @@
+@let current = (index$ | async) ?? 0;
+
+<main class="entry" [attr.data-time]="period">
+  <div class="bg" aria-hidden="true">
+    @for (scene of scenes; track scene.src; let i = $index) {
+      @if (shouldLoad(i, current)) {
+        <img
+          [src]="scene.src"
+          alt=""
+          decoding="async"
+          [style.object-position]="scene.position"
+          [class.on]="i === current"
+          [class.alt]="i % 2 === 1"
+        />
+      }
+    }
+  </div>
+  <div class="tint"></div>
+  <div class="scrim"></div>
+  <div class="grain"></div>
+
+  <header class="brand">
+    <span class="brand-mark">K</span>
+    <div>
+      <b>Kaka</b>
+      <small>Student Management</small>
+    </div>
+  </header>
+
+  <section class="hello">
+    <h1>{{ greeting }}</h1>
+    <p>{{ subtitle() }}</p>
+    <div class="cap">
+      <span class="cap-text">{{ scenes[current].title }} · {{ scenes[current].credit }}</span>
+      <div class="dots" role="group" aria-label="Photographs">
+        @for (scene of scenes; track scene.src; let i = $index) {
+          <button
+            type="button"
+            [class.on]="i === current"
+            [attr.aria-label]="'Show photograph: ' + scene.title"
+            [attr.aria-pressed]="i === current"
+            (click)="show(i)"
+          >
+            <i></i>
+          </button>
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <ng-content />
+  </section>
+
+  <footer class="foot">
+    <span class="studio-mark">Kaka Studio</span>
+    <span>Public-domain and CC0 photographs, each credited beside its title</span>
+  </footer>
+</main>

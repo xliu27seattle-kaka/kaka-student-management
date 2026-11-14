@@ -1,0 +1,98 @@
+name: kaka-student-management
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-kaka_sms}
+      POSTGRES_USER: ${POSTGRES_USER:-kaka}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-kaka_dev_password}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  # Local inbox. Mail to reserved test addresses (and all mail when no real SMTP
+  # account is configured) lands here. Web UI: http://localhost:8025
+  mailbox:
+    image: axllent/mailpit:v1.33
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: "1"
+      MP_SMTP_AUTH_ALLOW_INSECURE: "1"
+    ports:
+      - "${MAILBOX_UI_PORT:-8025}:8025"
+
+  # Sends email. Reachable only from inside this network (no host port): the backend
+  # calls it over HTTP with RestTemplate and a shared internal key.
+  notification-service:
+    build: ./notification-service
+    environment:
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY:-kaka-internal-dev-key}
+      MAIL_HOST: ${MAIL_HOST:-mailbox}
+      MAIL_PORT: ${MAIL_PORT:-1025}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      MAIL_SMTP_AUTH: ${MAIL_SMTP_AUTH:-false}
+      MAIL_STARTTLS: ${MAIL_STARTTLS:-false}
+      MAIL_FROM: ${MAIL_FROM:-no-reply@kaka-sms.example}
+    depends_on:
+      mailbox:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8081/actuator/health > /dev/null || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 10s
+
+  # Main API: every business rule and the only service that talks to the database.
+  # Swagger UI: http://localhost:8080/swagger-ui.html
+  backend:
+    build: ./backend
+    environment:
+      DB_HOST: db
+      POSTGRES_DB: ${POSTGRES_DB:-kaka_sms}
+      POSTGRES_USER: ${POSTGRES_USER:-kaka}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-kaka_dev_password}
+      JWT_SECRET: ${JWT_SECRET:-kaka-demo-jwt-secret-change-me-0123456789abcdef0123456789abcdef}
+      JWT_TTL_MINUTES: ${JWT_TTL_MINUTES:-120}
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY:-kaka-internal-dev-key}
+      NOTIFICATION_BASE_URL: http://notification-service:8081
+      EMAIL_MAX_RETRIES: ${EMAIL_MAX_RETRIES:-2}
+      APP_DEMO_DATA: ${APP_DEMO_DATA:-true}
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+      notification-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/actuator/health > /dev/null || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 40
+      start_period: 15s
+
+  # The web app: nginx serves the Angular build and forwards /api to the backend.
+  # Open http://localhost:4200
+  frontend:
+    build: ./frontend
+    ports:
+      - "${FRONTEND_PORT:-4200}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/ || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  db-data:

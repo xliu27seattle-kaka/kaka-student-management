@@ -1,0 +1,47 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: kaka-sms-backend
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:db}:5432/${POSTGRES_DB:kaka_sms}
+    username: ${POSTGRES_USER:kaka}
+    password: ${POSTGRES_PASSWORD:kaka_dev_password}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  # Flyway locations are set in DemoDataConfig (schema, plus demo data unless switched off).
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+app:
+  # Demo accounts (one professor, one student). Set APP_DEMO_DATA=false to start without them.
+  demo-data: ${APP_DEMO_DATA:true}
+  jwt:
+    # Demo default so the stack starts without any .env. Override JWT_SECRET anywhere real.
+    secret: ${JWT_SECRET:kaka-demo-jwt-secret-change-me-0123456789abcdef0123456789abcdef}
+    ttl-minutes: ${JWT_TTL_MINUTES:120}
+  notification:
+    base-url: ${NOTIFICATION_BASE_URL:http://notification-service:8081}
+    internal-api-key: ${INTERNAL_API_KEY:kaka-internal-dev-key}
+    connect-timeout-ms: 2000
+    read-timeout-ms: 10000
+  email:
+    # A failed send is retried this many times before the email is given up on.
+    max-retries: ${EMAIL_MAX_RETRIES:2}
+    retry-delay-seconds: 30
+    sweep-ms: 30000

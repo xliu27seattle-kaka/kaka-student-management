@@ -1,0 +1,100 @@
+/* The form card shown inside the entry layout, shared by the login and registration pages. */
+.auth-card {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+
+  header h2 {
+    font: 700 24px/32px var(--font);
+    letter-spacing: -0.02em;
+    color: var(--ink-1);
+  }
+
+  header p {
+    margin-top: 4px;
+    color: var(--ink-3);
+  }
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+
+  .input input {
+    padding-left: 14px;
+  }
+}
+
+.hint {
+  font: 500 12px/16px var(--font);
+  color: var(--ink-3);
+}
+
+.meta {
+  font: 500 12px/16px var(--font);
+  color: var(--ink-3);
+}
+
+.demo {
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  > span {
+    font: 600 12px/16px var(--font);
+    color: var(--ink-3);
+  }
+}
+
+.chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.done {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  text-align: left;
+
+  .seal {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    display: grid;
+    place-items: center;
+    font-size: 26px;
+  }
+
+  h2 {
+    font: 700 24px/32px var(--font);
+    letter-spacing: -0.02em;
+    color: var(--ink-1);
+  }
+
+  p {
+    color: var(--ink-2);
+    font: 500 14px/22px var(--font);
+  }
+
+  .number {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: var(--panel);
+    color: var(--ink-1);
+    font: 600 14px/22px var(--font-mono);
+  }
+}
+
+@media (max-width: 400px) {
+  .row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

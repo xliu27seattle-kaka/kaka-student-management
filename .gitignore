@@ -1,0 +1,11 @@
+# Local secrets (mail password etc.) must never be committed
+.env
+.env.*
+!.env.example
+
+# Brainstorm mockups and internal design/plan documents (kept local, not published)
+.superpowers/
+docs/superpowers/
+
+# OS
+.DS_Store
