@@ -14,6 +14,8 @@ import org.springframework.data.repository.query.Param;
 
 public interface EmailOutboxRepository extends JpaRepository<EmailOutbox, Long> {
 
+  long countByStatus(OutboxStatus status);
+
   /**
    * Loads one row and locks it until the transaction ends, so the after-commit dispatch and the
    * background sweep can never send the same email twice.

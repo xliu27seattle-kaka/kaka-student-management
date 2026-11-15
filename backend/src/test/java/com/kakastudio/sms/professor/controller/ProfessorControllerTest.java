@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.kakastudio.sms.professor.service.ProfessorAdminService;
 import com.kakastudio.sms.professor.service.ProfessorDirectoryService;
 import com.kakastudio.sms.professor.service.ProfessorProfileService;
+import com.kakastudio.sms.section.service.SectionService;
 import com.kakastudio.sms.security.JwtProperties;
 import com.kakastudio.sms.security.SecurityTestConfig;
 import com.kakastudio.sms.security.service.impl.JwtTokenService;
@@ -43,6 +44,7 @@ class ProfessorControllerTest {
   @MockitoBean private ProfessorDirectoryService directoryService;
   @MockitoBean private ProfessorProfileService profileService;
   @MockitoBean private UserRepository users;
+  @MockitoBean private SectionService sectionService;
 
   private String tokenFor(User user) {
     when(users.findById(user.getId())).thenReturn(Optional.of(user));

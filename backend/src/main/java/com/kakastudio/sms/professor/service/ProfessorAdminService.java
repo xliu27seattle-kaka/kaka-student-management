@@ -8,6 +8,8 @@ import com.kakastudio.sms.professor.dto.ProfessorUpdateRequest;
 /** What an administrator does with professors. */
 public interface ProfessorAdminService {
 
+  ProfessorResponse get(Long id);
+
   PageResponse<ProfessorResponse> list(String query, int page, int size);
 
   /** Creates an active professor and emails them a temporary password. */

@@ -1,5 +1,6 @@
 package com.kakastudio.sms.professor.service.impl;
 
+import com.kakastudio.sms.common.error.ConflictException;
 import com.kakastudio.sms.common.error.ErrorCode;
 import com.kakastudio.sms.common.error.NotFoundException;
 import com.kakastudio.sms.common.paging.PageRequests;
@@ -19,13 +20,17 @@ import com.kakastudio.sms.professor.service.ProfessorAdminService;
 import com.kakastudio.sms.professor.service.ProfessorDirectoryService;
 import com.kakastudio.sms.professor.service.ProfessorNumberGenerator;
 import com.kakastudio.sms.professor.service.ProfessorProfileService;
+import com.kakastudio.sms.section.domain.Section;
+import com.kakastudio.sms.section.repository.SectionRepository;
 import com.kakastudio.sms.security.service.CurrentUserProvider;
+import com.kakastudio.sms.semester.domain.SemesterStatus;
 import com.kakastudio.sms.user.domain.Role;
 import com.kakastudio.sms.user.domain.User;
 import com.kakastudio.sms.user.domain.UserStatus;
 import com.kakastudio.sms.user.service.NewAccount;
 import com.kakastudio.sms.user.service.TemporaryPasswordGenerator;
 import com.kakastudio.sms.user.service.UserAccountService;
+import java.util.EnumSet;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,6 +52,7 @@ public class ProfessorServiceImpl
   private final EmailOutboxService outbox;
   private final ProfessorMapper mapper;
   private final CurrentUserProvider currentUser;
+  private final SectionRepository sections;
 
   public ProfessorServiceImpl(
       ProfessorRepository professors,
@@ -56,7 +62,8 @@ public class ProfessorServiceImpl
       EmailComposer emails,
       EmailOutboxService outbox,
       ProfessorMapper mapper,
-      CurrentUserProvider currentUser) {
+      CurrentUserProvider currentUser,
+      SectionRepository sections) {
     this.professors = professors;
     this.accounts = accounts;
     this.numbers = numbers;
@@ -65,6 +72,7 @@ public class ProfessorServiceImpl
     this.outbox = outbox;
     this.mapper = mapper;
     this.currentUser = currentUser;
+    this.sections = sections;
   }
 
   // ---- administrators ----
@@ -76,6 +84,12 @@ public class ProfessorServiceImpl
         professors.findAll(
             ProfessorSpecifications.matching(query), PageRequests.newestFirst(page, size)),
         mapper::toResponse);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public ProfessorResponse get(Long id) {
+    return mapper.toResponse(find(id));
   }
 
   @Override
@@ -112,6 +126,21 @@ public class ProfessorServiceImpl
   @Override
   @Transactional
   public ProfessorResponse deactivate(Long id) {
+    List<String> teaching =
+        sections
+            .findByProfessorAndSemesterStatuses(
+                id, EnumSet.of(SemesterStatus.READY, SemesterStatus.STARTED))
+            .stream()
+            .map(Section::code)
+            .toList();
+    if (!teaching.isEmpty()) {
+      throw new ConflictException(
+          ErrorCode.HAS_ACTIVE_COMMITMENTS,
+          "Teaches "
+              + String.join(", ", teaching)
+              + " in an open or running semester. The account can be deactivated once that"
+              + " semester has ended (a section's professor is fixed once enrollment opens).");
+    }
     return mapper.toResponse(changeStatus(id, UserStatus.ACTIVE, UserStatus.INACTIVE));
   }
 
@@ -125,6 +154,11 @@ public class ProfessorServiceImpl
   @Transactional
   public void delete(Long id) {
     Professor professor = find(id);
+    if (sections.existsByProfessorId(id)) {
+      throw new ConflictException(
+          ErrorCode.HAS_HISTORY,
+          "This professor has taught sections, so the record stays. Deactivate the account instead.");
+    }
     professors.delete(professor);
     accounts.delete(professor.getUser());
   }

@@ -13,7 +13,12 @@ public final class PageRequests {
 
   /** Newest first (highest id first); a negative page becomes 0 and the size is capped. */
   public static PageRequest newestFirst(int page, int size) {
+    return sorted(page, size, Sort.by(Sort.Direction.DESC, "id"));
+  }
+
+  /** The given order; a negative page becomes 0 and the size is capped. */
+  public static PageRequest sorted(int page, int size, Sort sort) {
     int safeSize = size < 1 ? DEFAULT_SIZE : Math.min(size, MAX_SIZE);
-    return PageRequest.of(Math.max(page, 0), safeSize, Sort.by(Sort.Direction.DESC, "id"));
+    return PageRequest.of(Math.max(page, 0), safeSize, sort);
   }
 }

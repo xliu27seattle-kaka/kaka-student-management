@@ -37,6 +37,11 @@ public class AdminProfessorController {
     return professorService.list(query, page, size);
   }
 
+  @GetMapping("/{id}")
+  public ProfessorResponse get(@PathVariable Long id) {
+    return professorService.get(id);
+  }
+
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
   public ProfessorResponse create(@Valid @RequestBody ProfessorCreateRequest request) {

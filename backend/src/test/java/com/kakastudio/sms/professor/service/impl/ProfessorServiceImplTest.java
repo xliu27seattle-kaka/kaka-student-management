@@ -3,6 +3,7 @@ package com.kakastudio.sms.professor.service.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -25,8 +26,11 @@ import com.kakastudio.sms.professor.dto.ProfessorResponse;
 import com.kakastudio.sms.professor.mapper.ProfessorMapper;
 import com.kakastudio.sms.professor.repository.ProfessorRepository;
 import com.kakastudio.sms.professor.service.ProfessorNumberGenerator;
+import com.kakastudio.sms.section.repository.SectionRepository;
 import com.kakastudio.sms.security.dto.CurrentUser;
 import com.kakastudio.sms.security.service.CurrentUserProvider;
+import com.kakastudio.sms.semester.domain.SemesterStatus;
+import com.kakastudio.sms.testsupport.Catalog;
 import com.kakastudio.sms.testsupport.Users;
 import com.kakastudio.sms.user.domain.Role;
 import com.kakastudio.sms.user.domain.User;
@@ -53,6 +57,7 @@ class ProfessorServiceImplTest {
       mock(TemporaryPasswordGenerator.class);
   private final EmailOutboxService outbox = mock(EmailOutboxService.class);
   private final CurrentUserProvider currentUser = mock(CurrentUserProvider.class);
+  private final SectionRepository sections = mock(SectionRepository.class);
   private ProfessorServiceImpl service;
 
   @BeforeEach
@@ -71,7 +76,8 @@ class ProfessorServiceImplTest {
             new HtmlEmailComposer(),
             outbox,
             new ProfessorMapper(),
-            currentUser);
+            currentUser,
+            sections);
   }
 
   private Professor stored(Long id, UserStatus status) {
@@ -220,5 +226,35 @@ class ProfessorServiceImplTest {
     assertThat(service.deactivate(4L).status()).isEqualTo(UserStatus.INACTIVE);
     assertThat(failure(() -> service.deactivate(4L)).code())
         .isEqualTo(ErrorCode.INVALID_STATUS_TRANSITION);
+  }
+
+  @Test
+  void aProfessorTeachingAnOpenOrRunningSectionCannotBeDeactivated() {
+    Professor professor = stored(3L, UserStatus.ACTIVE);
+    when(sections.findByProfessorAndSemesterStatuses(eq(3L), any()))
+        .thenReturn(
+            List.of(
+                Catalog.section(
+                    9L,
+                    Catalog.course(1L, "CS201", 3),
+                    Catalog.semester(2L, "2026FA", SemesterStatus.STARTED),
+                    professor,
+                    "B")));
+
+    ApiException error = catchThrowableOfType(ApiException.class, () -> service.deactivate(3L));
+
+    assertThat(error.code()).isEqualTo(ErrorCode.HAS_ACTIVE_COMMITMENTS);
+    assertThat(error.getMessage()).contains("CS201-B").doesNotContain("Reassign");
+  }
+
+  @Test
+  void aProfessorWhoTaughtCannotBeDeleted() {
+    Professor professor = stored(3L, UserStatus.INACTIVE);
+    when(sections.existsByProfessorId(3L)).thenReturn(true);
+
+    ApiException error = catchThrowableOfType(ApiException.class, () -> service.delete(3L));
+
+    assertThat(error.code()).isEqualTo(ErrorCode.HAS_HISTORY);
+    verify(professors, never()).delete(professor);
   }
 }

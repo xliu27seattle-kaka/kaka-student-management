@@ -1,11 +1,15 @@
 package com.kakastudio.sms.student.service.impl;
 
+import com.kakastudio.sms.common.error.ConflictException;
 import com.kakastudio.sms.common.error.ErrorCode;
 import com.kakastudio.sms.common.error.NotFoundException;
 import com.kakastudio.sms.common.paging.PageRequests;
 import com.kakastudio.sms.common.paging.PageResponse;
+import com.kakastudio.sms.enrollment.domain.EnrollmentStatus;
+import com.kakastudio.sms.enrollment.repository.EnrollmentRepository;
 import com.kakastudio.sms.notification.email.service.EmailComposer;
 import com.kakastudio.sms.notification.email.service.EmailOutboxService;
+import com.kakastudio.sms.semester.domain.SemesterStatus;
 import com.kakastudio.sms.student.domain.Student;
 import com.kakastudio.sms.student.dto.RegisterRequest;
 import com.kakastudio.sms.student.dto.RegisterResponse;
@@ -26,6 +30,8 @@ import com.kakastudio.sms.user.service.TemporaryPasswordGenerator;
 import com.kakastudio.sms.user.service.UserAccountService;
 import java.time.Clock;
 import java.time.Year;
+import java.util.EnumSet;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +46,7 @@ public class StudentServiceImpl implements StudentService {
   private final EmailComposer emails;
   private final EmailOutboxService outbox;
   private final StudentMapper mapper;
+  private final EnrollmentRepository enrollments;
   private final Clock clock;
 
   public StudentServiceImpl(
@@ -50,6 +57,7 @@ public class StudentServiceImpl implements StudentService {
       EmailComposer emails,
       EmailOutboxService outbox,
       StudentMapper mapper,
+      EnrollmentRepository enrollments,
       Clock clock) {
     this.students = students;
     this.accounts = accounts;
@@ -58,6 +66,7 @@ public class StudentServiceImpl implements StudentService {
     this.emails = emails;
     this.outbox = outbox;
     this.mapper = mapper;
+    this.enrollments = enrollments;
     this.clock = clock;
   }
 
@@ -156,6 +165,21 @@ public class StudentServiceImpl implements StudentService {
   @Override
   @Transactional
   public StudentResponse deactivate(Long id) {
+    List<String> seats =
+        enrollments
+            .findByStudent_IdAndStatusAndSection_Semester_StatusIn(
+                id,
+                EnrollmentStatus.ENROLLED,
+                EnumSet.of(SemesterStatus.READY, SemesterStatus.STARTED))
+            .stream()
+            .map(e -> e.getSection().code())
+            .sorted()
+            .toList();
+    if (!seats.isEmpty()) {
+      throw new ConflictException(
+          ErrorCode.HAS_ACTIVE_COMMITMENTS,
+          "Drop the student from " + String.join(", ", seats) + " first");
+    }
     return mapper.toResponse(changeStatus(id, UserStatus.ACTIVE, UserStatus.INACTIVE));
   }
 
@@ -169,6 +193,12 @@ public class StudentServiceImpl implements StudentService {
   @Transactional
   public void delete(Long id) {
     Student student = find(id);
+    if (enrollments.existsByStudentIdAndStatusNot(id, EnrollmentStatus.DROPPED)) {
+      throw new ConflictException(
+          ErrorCode.HAS_HISTORY,
+          "This student has enrollment history, so the record stays. Deactivate the account instead.");
+    }
+    enrollments.deleteByStudentId(id); // only dropped sections are left, and they leave no trace
     students.delete(student);
     accounts.delete(student.getUser());
   }

@@ -16,6 +16,8 @@ spring:
       hibernate:
         jdbc:
           time_zone: UTC
+      # A request waits at most 5 seconds for a row lock, then gets 409 RECORD_BUSY.
+      jakarta.persistence.lock.timeout: 5000
   # Flyway locations are set in DemoDataConfig (schema, plus demo data unless switched off).
 
 management:

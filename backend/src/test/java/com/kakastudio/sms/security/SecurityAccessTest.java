@@ -18,6 +18,8 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -116,6 +118,28 @@ class SecurityAccessTest {
         .andExpect(jsonPath("$.code").value("SESSION_REVOKED"));
   }
 
+  /** Each area admits exactly its own role; the shared paths admit every signed-in role. */
+  @ParameterizedTest(name = "{0} on {1} -> {2}")
+  @CsvSource({
+    "ADMIN, admin, 200",
+    "ADMIN, professor, 403",
+    "ADMIN, student, 403",
+    "ADMIN, notifications, 200",
+    "PROFESSOR, admin, 403",
+    "PROFESSOR, professor, 200",
+    "PROFESSOR, student, 403",
+    "PROFESSOR, notifications, 200",
+    "STUDENT, admin, 403",
+    "STUDENT, professor, 403",
+    "STUDENT, student, 200",
+    "STUDENT, notifications, 200"
+  })
+  void eachRoleEntersOnlyItsOwnArea(Role role, String area, int expected) throws Exception {
+    User user = Users.user(40L, "someone@kaka.example", role, UserStatus.ACTIVE);
+    mvc.perform(get("/api/v1/" + area + "/ping").header("Authorization", tokenFor(user)))
+        .andExpect(status().is(expected));
+  }
+
   @RestController
   static class PingController {
 
@@ -126,6 +150,16 @@ class SecurityAccessTest {
 
     @GetMapping("/api/v1/student/ping")
     String student() {
+      return "pong";
+    }
+
+    @GetMapping("/api/v1/professor/ping")
+    String professor() {
+      return "pong";
+    }
+
+    @GetMapping("/api/v1/notifications/ping")
+    String anySignedIn() {
       return "pong";
     }
   }

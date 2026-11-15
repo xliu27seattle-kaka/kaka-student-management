@@ -11,6 +11,8 @@ public enum ErrorCode {
   INVALID_PARAMETER,
   REQUEST_FAILED,
   DATA_CONFLICT,
+  /** A row another request is changing could not be locked in time; trying again works. */
+  RECORD_BUSY,
   INTERNAL_ERROR,
 
   // authentication and access
@@ -29,5 +31,51 @@ public enum ErrorCode {
   EMAIL_TAKEN,
   INVALID_STATUS_TRANSITION,
   STUDENT_NOT_FOUND,
-  PROFESSOR_NOT_FOUND
+  PROFESSOR_NOT_FOUND,
+  /** Deactivating a person who still has enrollments or sections in an open or running semester. */
+  HAS_ACTIVE_COMMITMENTS,
+  /** Deleting a person or record that history depends on; deactivate or retire it instead. */
+  HAS_HISTORY,
+
+  // courses
+  COURSE_NOT_FOUND,
+  COURSE_CODE_TAKEN,
+  COURSE_IN_USE,
+  COURSE_INACTIVE,
+  PREREQUISITE_NOT_FOUND,
+  PREREQUISITE_SELF,
+  PREREQUISITE_CYCLE,
+
+  // semesters and sections
+  SEMESTER_NOT_FOUND,
+  SEMESTER_CODE_TAKEN,
+  SEMESTER_NOT_EDITABLE,
+  SEMESTER_IN_USE,
+  SEMESTER_TRANSITION_NOT_ALLOWED,
+  SEMESTER_HAS_ENROLLMENTS,
+  UNGRADED_ENROLLMENTS,
+  INVALID_DATE_RANGE,
+  SECTION_NOT_FOUND,
+  SECTION_NOT_EDITABLE,
+  MEETING_INVALID,
+  MEETING_OVERLAP,
+  PROFESSOR_INACTIVE,
+  PROFESSOR_SCHEDULE_CONFLICT,
+  CAPACITY_BELOW_ENROLLED,
+
+  // enrollment and grades
+  ENROLLMENT_NOT_FOUND,
+  NOT_ELIGIBLE,
+  ENROLLMENT_LOCKED,
+  GRADING_CLOSED,
+  GRADE_TARGET_INVALID,
+  NOT_YOUR_SECTION,
+
+  // graduation
+  GRADUATION_NOT_ELIGIBLE,
+  GRADUATION_APPLICATION_NOT_FOUND,
+
+  // notifications
+  NOTIFICATION_NOT_FOUND,
+  NO_RECIPIENTS
 }

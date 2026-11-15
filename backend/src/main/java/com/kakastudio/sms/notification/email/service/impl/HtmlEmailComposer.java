@@ -66,6 +66,43 @@ public class HtmlEmailComposer implements EmailComposer {
             + paragraph("Please sign in and change this password from your profile."));
   }
 
+  @Override
+  public EmailMessage graduationApproved(User user, String certificateNo) {
+    return message(
+        user,
+        "Congratulations on your graduation",
+        paragraph("Hello " + esc(user.getFirstName()) + ",")
+            + paragraph(
+                "Your graduation has been approved. Your certificate number is <strong>"
+                    + esc(certificateNo)
+                    + "</strong>.")
+            + paragraph(
+                "You can print your certificate and your official transcript from the Graduation"
+                    + " page after signing in."));
+  }
+
+  @Override
+  public EmailMessage graduationRejected(User user) {
+    return message(
+        user,
+        "Your graduation application",
+        paragraph("Hello " + esc(user.getFirstName()) + ",")
+            + paragraph(
+                "Your graduation application was not approved this time. Please contact the"
+                    + " registrar's office; you can apply again from the Graduation page."));
+  }
+
+  @Override
+  public EmailMessage notification(User recipient, String subject, String body, String senderName) {
+    String text = esc(body).replace("\r\n", "\n").replace("\n", "<br>");
+    return message(
+        recipient,
+        subject,
+        paragraph("Hello " + esc(recipient.getFirstName()) + ",")
+            + paragraph(text)
+            + paragraph("<span style=\"color:#66766d\">From " + esc(senderName) + "</span>"));
+  }
+
   private static EmailMessage message(User user, String subject, String bodyHtml) {
     return new EmailMessage(user.getEmail(), subject, layout(subject, bodyHtml));
   }

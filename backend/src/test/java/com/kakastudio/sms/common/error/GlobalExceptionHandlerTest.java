@@ -30,6 +30,13 @@ class GlobalExceptionHandlerTest {
   @Autowired private MockMvc mvc;
 
   @Test
+  void aBusyRowIsAConflictToRetryNotACrash() throws Exception {
+    mvc.perform(get("/probe/locked"))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.code").value("RECORD_BUSY"));
+  }
+
+  @Test
   void apiExceptionKeepsStatusAndCode() throws Exception {
     mvc.perform(get("/probe/conflict"))
         .andExpect(status().isConflict())
@@ -116,6 +123,11 @@ class GlobalExceptionHandlerTest {
           "could not execute statement",
           new RuntimeException(
               "ERROR: duplicate key value violates unique constraint \"students_student_no_key\""));
+    }
+
+    @GetMapping("/probe/locked")
+    void locked() {
+      throw new org.springframework.dao.PessimisticLockingFailureException("lock timeout");
     }
 
     @GetMapping("/probe/conflict")

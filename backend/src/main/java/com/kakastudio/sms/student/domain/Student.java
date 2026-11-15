@@ -12,6 +12,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import java.time.Instant;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -39,6 +40,13 @@ public class Student {
   @Enumerated(EnumType.STRING)
   @Column(name = "academic_status", nullable = false)
   private AcademicStatus academicStatus = AcademicStatus.ENROLLED;
+
+  /** Issued when graduation is approved. */
+  @Column(name = "certificate_no", unique = true)
+  private String certificateNo;
+
+  @Column(name = "graduated_at")
+  private Instant graduatedAt;
 
   public Student(User user, String studentNo) {
     this.user = user;

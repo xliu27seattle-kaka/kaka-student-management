@@ -3,6 +3,7 @@ package com.kakastudio.sms.student.service.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -11,9 +12,13 @@ import static org.mockito.Mockito.when;
 import com.kakastudio.sms.common.error.ApiException;
 import com.kakastudio.sms.common.error.ErrorCode;
 import com.kakastudio.sms.common.paging.PageResponse;
+import com.kakastudio.sms.enrollment.domain.EnrollmentStatus;
+import com.kakastudio.sms.enrollment.repository.EnrollmentRepository;
 import com.kakastudio.sms.notification.email.dto.EmailMessage;
 import com.kakastudio.sms.notification.email.service.EmailOutboxService;
 import com.kakastudio.sms.notification.email.service.impl.HtmlEmailComposer;
+import com.kakastudio.sms.section.domain.Section;
+import com.kakastudio.sms.semester.domain.SemesterStatus;
 import com.kakastudio.sms.student.domain.AcademicStatus;
 import com.kakastudio.sms.student.domain.Student;
 import com.kakastudio.sms.student.dto.RegisterRequest;
@@ -24,6 +29,7 @@ import com.kakastudio.sms.student.dto.StudentUpdateRequest;
 import com.kakastudio.sms.student.mapper.StudentMapper;
 import com.kakastudio.sms.student.repository.StudentRepository;
 import com.kakastudio.sms.student.service.StudentNumberGenerator;
+import com.kakastudio.sms.testsupport.Catalog;
 import com.kakastudio.sms.testsupport.Users;
 import com.kakastudio.sms.user.domain.Role;
 import com.kakastudio.sms.user.domain.User;
@@ -56,6 +62,7 @@ class StudentServiceImplTest {
   private final TemporaryPasswordGenerator temporaryPasswords =
       mock(TemporaryPasswordGenerator.class);
   private final EmailOutboxService outbox = mock(EmailOutboxService.class);
+  private final EnrollmentRepository enrollments = mock(EnrollmentRepository.class);
   private StudentServiceImpl service;
 
   @BeforeEach
@@ -74,6 +81,7 @@ class StudentServiceImplTest {
             new HtmlEmailComposer(),
             outbox,
             new StudentMapper(),
+            enrollments,
             Clock.fixed(NOW, ZoneOffset.UTC));
   }
 
@@ -274,5 +282,49 @@ class StudentServiceImplTest {
 
     verify(students).delete(student);
     verify(users).delete(student.getUser());
+  }
+
+  @Test
+  void aStudentWithAnOpenOrRunningSeatCannotBeDeactivated() {
+    Student student = stored(3L, UserStatus.ACTIVE);
+    Section section =
+        Catalog.section(
+            9L,
+            Catalog.course(1L, "CS201", 3),
+            Catalog.semester(2L, "2027SP", SemesterStatus.READY),
+            Catalog.professor(1L, "Okafor"),
+            "A");
+    when(enrollments.findByStudent_IdAndStatusAndSection_Semester_StatusIn(
+            eq(3L), eq(EnrollmentStatus.ENROLLED), any()))
+        .thenReturn(
+            List.of(Catalog.enrollment(1L, student, section, EnrollmentStatus.ENROLLED, null)));
+
+    ApiException error = failure(() -> service.deactivate(3L));
+
+    assertThat(error.code()).isEqualTo(ErrorCode.HAS_ACTIVE_COMMITMENTS);
+    assertThat(error.getMessage()).contains("CS201-A");
+    assertThat(student.getUser().getStatus()).isEqualTo(UserStatus.ACTIVE);
+  }
+
+  @Test
+  void aStudentWithHistoryCannotBeDeleted() {
+    Student student = stored(3L, UserStatus.INACTIVE);
+    when(enrollments.existsByStudentIdAndStatusNot(3L, EnrollmentStatus.DROPPED)).thenReturn(true);
+
+    ApiException error = failure(() -> service.delete(3L));
+
+    assertThat(error.code()).isEqualTo(ErrorCode.HAS_HISTORY);
+    verify(students, never()).delete(student);
+  }
+
+  @Test
+  void droppedSectionsLeaveNoTraceSoTheStudentCanStillBeDeleted() {
+    Student student = stored(3L, UserStatus.INACTIVE);
+    when(enrollments.existsByStudentIdAndStatusNot(3L, EnrollmentStatus.DROPPED)).thenReturn(false);
+
+    service.delete(3L);
+
+    verify(enrollments).deleteByStudentId(3L);
+    verify(students).delete(student);
   }
 }

@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.NestedExceptionUtils;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -81,6 +82,17 @@ public class GlobalExceptionHandler {
         HttpStatus.CONFLICT,
         ErrorCode.DATA_CONFLICT,
         "The request conflicts with existing data",
+        List.of());
+  }
+
+  /** Another request held a row lock for too long (lock timeout in application.yml). */
+  @ExceptionHandler(PessimisticLockingFailureException.class)
+  public ResponseEntity<ApiError> handleLockTimeout(PessimisticLockingFailureException ex) {
+    log.warn("Lock not granted: {}", ex.getMessage());
+    return respond(
+        HttpStatus.CONFLICT,
+        ErrorCode.RECORD_BUSY,
+        "Someone else is changing this right now. Please try again.",
         List.of());
   }
 
