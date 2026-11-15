@@ -138,8 +138,11 @@
 
 /*
  * ── panels on the photograph ──
- * No backdrop blur on purpose: the photograph behind keeps moving, so a blur would be
- * recomputed on every frame and keep the visitor's CPU or GPU busy the whole time.
+ * The two large panels are frosted glass: the photograph shows through as soft colour, blurred
+ * so its detail never sits behind the text. Their greys are one step darker than elsewhere, so
+ * helper text stays readable (4.5:1) even over the darkest part of a photograph. Visitors who
+ * ask their system for less transparency or less motion get solid paper instead (no blur to
+ * recompute while the photograph zooms).
  */
 .chip-on-photo,
 .welcome,
@@ -147,6 +150,23 @@
   background: var(--glass);
   border: 1px solid var(--glass-line);
   box-shadow: var(--glass-shadow);
+}
+
+.welcome,
+.card {
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  backdrop-filter: blur(18px) saturate(140%);
+}
+
+.welcome {
+  --ink-2: #26322c;
+  --ink-3: #34413a;
+  background: rgba(251, 250, 246, 0.66);
+}
+
+.card {
+  --ink-2: #2c3832;
+  --ink-3: #3c4a43;
 }
 
 .chip-on-photo {
@@ -332,8 +352,7 @@
   color: var(--ink-1);
   border-radius: var(--radius-lg);
   padding: clamp(20px, 2.4vw, 32px);
-  /* Solid paper: the form's grey hints keep their contrast whatever photograph is behind. */
-  background: var(--paper);
+  background: rgba(251, 250, 246, 0.74);
   animation: rise 1s var(--ease) both 0.24s;
 }
 
@@ -513,5 +532,15 @@
     animation: none;
     transform: scale(1.05);
     transition-duration: 0.6s;
+  }
+}
+
+/* Less transparency or less motion asked for: solid paper, no blur (kept last so it wins). */
+@media (prefers-reduced-transparency: reduce), (prefers-reduced-motion: reduce) {
+  .welcome,
+  .card {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: var(--paper);
   }
 }
