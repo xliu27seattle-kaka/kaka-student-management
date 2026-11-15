@@ -29,6 +29,8 @@
 .main {
   --ink-2: var(--ink-2-on-glass);
   --ink-3: var(--ink-3-on-glass);
+  /* page changes animate this area only; the sidebar stays still (styles/motion.scss) */
+  view-transition-name: page;
 }
 
 .rail {

@@ -42,4 +42,24 @@ describe('Tabs', () => {
     buttons[1].click();
     expect(changes).toEqual([]);
   });
+
+  it('tells the panels which way the switch went', () => {
+    const { fixture, buttons } = render('two');
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.getAttribute('data-direction')).toBe('none');
+
+    buttons[0].click();
+    fixture.detectChanges();
+    expect(host.getAttribute('data-direction')).toBe('back');
+
+    fixture.componentRef.setInput('active', 'one');
+    buttons[2].click();
+    fixture.detectChanges();
+    expect(host.getAttribute('data-direction')).toBe('forward');
+  });
+
+  it('has one underline for the whole row', () => {
+    const { fixture } = render('two');
+    expect((fixture.nativeElement as HTMLElement).querySelectorAll('.indicator').length).toBe(1);
+  });
 });

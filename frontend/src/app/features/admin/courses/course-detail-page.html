@@ -41,8 +41,9 @@
   @if (tab === 'sections') {
     @let sections = (sections$ | async)!;
     <section
-      class="card flush rise"
+      class="card flush"
       role="tabpanel"
+      animate.enter="tab-enter"
       aria-labelledby="tab-sections"
       id="tab-sections-panel"
     >
@@ -98,8 +99,9 @@
     @if (state.data; as c) {
       @if (tab === 'overview') {
         <section
-          class="card rise"
+          class="card"
           role="tabpanel"
+          animate.enter="tab-enter"
           aria-labelledby="tab-overview"
           id="tab-overview-panel"
         >
@@ -128,6 +130,7 @@
         <section
           class="card rise chain"
           role="tabpanel"
+          animate.enter="tab-enter"
           aria-labelledby="tab-prerequisites"
           id="tab-prerequisites-panel"
         >

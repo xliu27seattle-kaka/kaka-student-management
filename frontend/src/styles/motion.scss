@@ -1,0 +1,110 @@
+/*
+ * Motion between states, nothing else: signing in and out, moving between pages, switching tabs.
+ * Only transform and opacity animate, on the shared --ease curve. Under reduced motion the
+ * router skips view transitions and the global backstop in styles.scss stops the rest.
+ */
+
+/* ── page changes (browser view transitions, tagged in core/motion/transitions.ts) ── */
+::view-transition-group(root),
+::view-transition-group(page) {
+  animation-duration: 0.24s;
+  animation-timing-function: var(--ease);
+}
+
+/* Signing in: the entry page eases back and dissolves, the app fades in and its page rises. */
+html[data-transition='enter'] {
+  &::view-transition-old(root) {
+    animation: vt-recede 0.42s var(--ease) both;
+  }
+
+  &::view-transition-new(root) {
+    animation: vt-fade-in 0.42s var(--ease) both;
+  }
+
+  &::view-transition-new(page) {
+    animation: vt-rise-in 0.5s var(--ease) 0.08s both;
+  }
+}
+
+/* Signing out: the same idea, shorter and without the rise. */
+html[data-transition='leave'] {
+  &::view-transition-old(root),
+  &::view-transition-old(page) {
+    animation: vt-fade-out 0.24s ease-out both;
+  }
+
+  &::view-transition-new(root) {
+    animation: vt-fade-in 0.24s ease-out both;
+  }
+}
+
+/* Inside the app: the sidebar stays put, only the page fades and rises a little. */
+html[data-transition='page'] {
+  &::view-transition-old(root),
+  &::view-transition-new(root) {
+    animation: none;
+  }
+
+  &::view-transition-old(page) {
+    animation: vt-fade-out 0.12s ease-out both;
+  }
+
+  &::view-transition-new(page) {
+    animation: vt-rise-in 0.24s var(--ease) both;
+  }
+}
+
+@keyframes vt-recede {
+  to {
+    opacity: 0;
+    transform: scale(1.03);
+  }
+}
+
+@keyframes vt-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes vt-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes vt-rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+/* ── switching tabs: the new panel comes in from the side the tabs moved toward ── */
+.tab-enter {
+  animation: tab-panel-in 0.28s var(--ease) both;
+}
+
+body:has(app-tabs[data-direction='back']) {
+  --tab-shift: -14px;
+}
+
+/* The first panel of a page appears with the page, not with a slide. */
+body:has(app-tabs[data-direction='none']) .tab-enter {
+  animation: none;
+}
+
+@keyframes tab-panel-in {
+  from {
+    opacity: 0;
+    transform: translateX(var(--tab-shift, 14px));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}

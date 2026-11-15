@@ -97,7 +97,12 @@ import { applyServerErrors, personForm } from '../people/person-form';
           (activeChange)="selectTab($event)"
         />
         @if (tab === 'profile') {
-          <div role="tabpanel" aria-labelledby="tab-profile" id="tab-profile-panel">
+          <div
+            role="tabpanel"
+            animate.enter="tab-enter"
+            aria-labelledby="tab-profile"
+            id="tab-profile-panel"
+          >
             @if (profile$ | async; as profile) {
               <app-professor-card [profile]="profile" [sections]="(sections$ | async) ?? []" />
             } @else {
@@ -112,8 +117,9 @@ import { applyServerErrors, personForm } from '../people/person-form';
           </div>
         } @else {
           <form
-            class="card rise"
+            class="card"
             role="tabpanel"
+            animate.enter="tab-enter"
             aria-labelledby="tab-account"
             id="tab-account-panel"
             [formGroup]="form"

@@ -67,8 +67,9 @@
     @switch (tab) {
       @case ('profile') {
         <form
-          class="card rise"
+          class="card"
           role="tabpanel"
+          animate.enter="tab-enter"
           aria-labelledby="tab-profile"
           id="tab-profile-panel"
           [formGroup]="form"
@@ -105,6 +106,7 @@
         <div
           class="grid-main-side"
           role="tabpanel"
+          animate.enter="tab-enter"
           aria-labelledby="tab-enrollments"
           id="tab-enrollments-panel"
         >
@@ -215,7 +217,12 @@
         </div>
       }
       @case ('transcript') {
-        <div role="tabpanel" aria-labelledby="tab-transcript" id="tab-transcript-panel">
+        <div
+          role="tabpanel"
+          animate.enter="tab-enter"
+          aria-labelledby="tab-transcript"
+          id="tab-transcript-panel"
+        >
           @let transcript = (transcript$ | async)!;
           @if (transcript.loading) {
             <div class="card flush"><app-skeleton-rows /></div>

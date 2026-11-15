@@ -291,13 +291,13 @@
 
 /* ── tabs ── */
 .tabs {
+  position: relative;
   display: flex;
   gap: 4px;
   border-bottom: 1px solid var(--line);
   overflow-x: auto;
 
   button {
-    position: relative;
     height: 44px;
     padding: 0 16px;
     border: 0;
@@ -306,30 +306,11 @@
     font: 600 14px/20px var(--font);
     cursor: pointer;
     white-space: nowrap;
+    transition: color 0.2s ease-in-out;
 
-    &::after {
-      content: '';
-      position: absolute;
-      left: 12px;
-      right: 12px;
-      bottom: -1px;
-      height: 2px;
-      border-radius: 2px;
-      background: var(--accent);
-      transform: scaleX(0);
-      transition: transform 0.3s var(--ease);
-    }
-
-    &:hover {
-      color: var(--ink-1);
-    }
-
+    &:hover,
     &[aria-selected='true'] {
       color: var(--ink-1);
-
-      &::after {
-        transform: scaleX(1);
-      }
     }
 
     &:focus-visible {
@@ -337,6 +318,23 @@
       outline-offset: -2px;
       border-radius: 8px;
     }
+  }
+
+  /* One underline for the whole row; it slides to the active tab (see the Tabs component). */
+  .indicator {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 1px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--accent);
+    transform-origin: left center;
+    pointer-events: none;
+  }
+
+  .indicator.moving {
+    transition: transform 0.32s var(--ease);
   }
 }
 
