@@ -1,8 +1,34 @@
 .shell {
+  position: relative;
+  isolation: isolate;
   display: grid;
   grid-template-columns: 256px minmax(0, 1fr);
   min-height: 100vh;
-  background: var(--page);
+
+  /* The photograph stays still behind everything; the veil shades the header area most. */
+  &::before,
+  &::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  &::before {
+    z-index: -2;
+    background: var(--page) var(--backdrop, none) center / cover no-repeat;
+  }
+
+  &::after {
+    z-index: -1;
+    background: var(--veil);
+  }
+}
+
+/* Text on glass uses greys one step further from the surface, so it stays at 4.5:1. */
+.main {
+  --ink-2: var(--ink-2-on-glass);
+  --ink-3: var(--ink-3-on-glass);
 }
 
 .rail {
@@ -13,7 +39,9 @@
   flex-direction: column;
   gap: 24px;
   padding: 20px 14px;
-  background: var(--rail-bg);
+  background: var(--rail-glass);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
   border-right: 1px solid var(--rail-line);
   color: var(--rail-ink);
   overflow-y: auto;
@@ -369,9 +397,21 @@
   }
 }
 
+/* Less transparency or less motion asked for: no photograph (surfaces turn solid in app-ui). */
+@media (prefers-reduced-transparency: reduce), (prefers-reduced-motion: reduce) {
+  .shell::before {
+    background-image: none;
+  }
+}
+
 @media print {
   .shell {
     display: block;
     background: none;
+
+    &::before,
+    &::after {
+      display: none;
+    }
   }
 }

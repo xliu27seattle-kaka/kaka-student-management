@@ -14,12 +14,14 @@ import { ConfirmDialog } from '../../shared/ui/confirm-dialog';
 import { ToastStack } from '../../shared/ui/toast-stack';
 import { AuthStore } from '../auth/auth-store';
 import { UnreadStore } from '../notifications/unread-store';
+import { BackdropStore } from '../theme/backdrop';
 import { THEMES, ThemeId, ThemeStore } from '../theme/theme-store';
 import { AREA_LABEL, NAVIGATION } from './navigation';
 
 /**
- * The frame around every signed-in page: navigation for the user's role (a sidebar, which becomes a top
- * bar in narrow windows), the theme switcher, the unread badge, and the one confirmation modal and
+ * The frame around every signed-in page: a still photograph of DC or Maryland behind frosted
+ * glass (day photos for light themes, night photos for dark ones, drawn once per sign-in), the
+ * navigation for the user's role (a sidebar, which becomes a top bar in narrow windows), the theme switcher, the unread badge, and the one confirmation modal and
  * toast stack the pages share.
  */
 @Component({
@@ -33,6 +35,7 @@ export class AppShell implements OnInit, OnDestroy {
   private readonly auth = inject(AuthStore);
   private readonly themes = inject(ThemeStore);
   private readonly unread = inject(UnreadStore);
+  private readonly backdrop = inject(BackdropStore);
   private readonly router = inject(Router);
   private readonly themeMenu = viewChild<ElementRef<HTMLDetailsElement>>('themeMenu');
 
@@ -41,11 +44,13 @@ export class AppShell implements OnInit, OnDestroy {
     this.auth.user$,
     this.themes.option$,
     this.unread.unread$,
+    this.backdrop.photo$,
   ]).pipe(
-    map(([user, theme, unread]) => ({
+    map(([user, theme, unread, photo]) => ({
       user,
       theme,
       unread,
+      backdrop: photo ? `url('${photo}')` : null,
       nav: user ? NAVIGATION[user.role] : [],
       area: user ? AREA_LABEL[user.role] : '',
       accountLink: user ? `/${user.role.toLowerCase()}/account` : '/',

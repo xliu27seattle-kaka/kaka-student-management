@@ -41,7 +41,14 @@ describe('ThemeStore', () => {
 
   it('changes colours only: no theme carries a layout of its own', () => {
     expect(THEMES.map((theme) => Object.keys(theme).sort())).toEqual(
-      THEMES.map(() => ['id', 'name', 'swatch']),
+      THEMES.map(() => ['dark', 'id', 'name', 'swatch']),
     );
+  });
+
+  it('says which themes are dark, so they get night photographs', () => {
+    expect(THEMES.filter((theme) => theme.dark).map((theme) => theme.id)).toEqual([
+      'midnight',
+      'graphite',
+    ]);
   });
 });

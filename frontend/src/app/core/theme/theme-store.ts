@@ -9,13 +9,15 @@ export interface ThemeOption {
   name: string;
   /** Two colours for the swatch in the switcher. */
   swatch: [string, string];
+  /** Dark themes show night photographs behind the pages, light themes day ones. */
+  dark: boolean;
 }
 
 export const THEMES: readonly ThemeOption[] = [
-  { id: 'sage', name: 'Sage Ledger', swatch: ['#eef0ec', '#2f6b4f'] },
-  { id: 'midnight', name: 'Midnight & Amber', swatch: ['#12141c', '#e8a33d'] },
-  { id: 'graphite', name: 'Graphite & Lime', swatch: ['#1f1f1f', '#b6e018'] },
-  { id: 'cobalt', name: 'Cobalt Trust', swatch: ['#111a2e', '#2d5bd8'] },
+  { id: 'sage', name: 'Sage Ledger', swatch: ['#eef0ec', '#2f6b4f'], dark: false },
+  { id: 'midnight', name: 'Midnight & Amber', swatch: ['#12141c', '#e8a33d'], dark: true },
+  { id: 'graphite', name: 'Graphite & Lime', swatch: ['#1f1f1f', '#b6e018'], dark: true },
+  { id: 'cobalt', name: 'Cobalt Trust', swatch: ['#111a2e', '#2d5bd8'], dark: false },
 ];
 
 export const THEME_STORAGE_KEY = 'kaka.theme';

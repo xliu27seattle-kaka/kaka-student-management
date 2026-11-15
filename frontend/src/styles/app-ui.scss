@@ -43,7 +43,8 @@
   font: 600 12px/16px var(--font);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--accent);
+  /* the stronger accent: it often sits on the photograph */
+  color: var(--accent-strong);
 }
 
 .back-link {
@@ -67,8 +68,10 @@
 }
 
 .card {
-  background: var(--bg);
-  border: 1px solid var(--line);
+  background: var(--surface);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-edge);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow);
   padding: 24px;
@@ -133,8 +136,10 @@
   flex-direction: column;
   gap: 4px;
   padding: 20px;
-  background: var(--bg);
-  border: 1px solid var(--line);
+  background: var(--surface);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-edge);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow);
   color: inherit;
@@ -628,6 +633,11 @@ dialog.modal {
   /* Browsers drop backgrounds when printing: whatever the theme, print dark ink on white. */
   :root,
   [data-theme] {
+    --surface: #ffffff;
+    --glass-blur: none;
+    --glass-edge: rgba(0, 0, 0, 0.15);
+    --ink-2-on-glass: #333333;
+    --ink-3-on-glass: #555555;
     --page: #ffffff;
     --bg: #ffffff;
     --paper: #ffffff;
@@ -833,4 +843,16 @@ h2.sub {
 
 .toolbar.pad {
   padding: 16px 20px;
+}
+
+/* Less transparency or less motion asked for: solid surfaces, no blur, no photograph. */
+@media (prefers-reduced-transparency: reduce), (prefers-reduced-motion: reduce) {
+  :root,
+  [data-theme] {
+    --surface: var(--bg);
+    --glass-blur: none;
+    --glass-edge: var(--line);
+    --rail-glass: var(--rail-bg);
+    --veil: none;
+  }
 }

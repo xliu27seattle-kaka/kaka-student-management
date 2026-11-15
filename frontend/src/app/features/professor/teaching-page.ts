@@ -109,8 +109,10 @@ interface TermGroup {
       gap: 6px;
       padding: 18px;
       border-radius: var(--radius-lg);
-      background: var(--bg);
-      border: 1px solid var(--line);
+      background: var(--surface);
+      -webkit-backdrop-filter: var(--glass-blur);
+      backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--glass-edge);
       box-shadow: var(--shadow);
       color: inherit;
       text-decoration: none;

@@ -75,7 +75,7 @@ Also in the demo data: `omar.haddad@uni.example` is waiting for approval, `ethan
 3. **Enrollment.** Sign in as Lena and open **Enroll**. Spring 2027 shows every reason a section can be unavailable: already completed, already taking the course this term, prerequisite missing, section full, overlapping another class, less than 10 minutes after another class, already in another section of the course. Hover a section to see it on the weekly timetable; enroll in CS250-A and watch the timetable and the credits change.
 4. **Grading.** Sign in as `amara.okafor@faculty.example` and open **CS320-A** under Fall 2026. The Roster, Grades and Message tabs show the class; the Grades tab previews the letter as you type a score.
 5. **End of semester and graduation.** As the admin, open **Semesters → Fall 2026** and click **End the semester**: the confirmation says Lena has no grade in CS301-A yet, and the server refuses. Sign in as `meilin.chen@faculty.example`, give Lena a score in **CS301-A** under Fall 2026, then end the semester as the admin. Sign in as Noah: he now has 31 credits and can apply for graduation. Approve him under **Graduation**, then print his certificate from his Graduation page.
-6. **Themes.** Pick another theme in the sidebar: Sage Ledger, Midnight & Amber, Graphite & Lime or Cobalt Trust. Only colours and fonts change; the layout stays the same.
+6. **Themes.** Pick another theme in the sidebar: Sage Ledger, Midnight & Amber, Graphite & Lime or Cobalt Trust. Only colours and fonts change; the layout stays the same. Every signed-in page sits on a still photograph behind frosted glass, drawn at random at each sign-in: Washington and Maryland by day in the light themes, Washington at night in the dark ones.
 
 ---
 
@@ -178,6 +178,6 @@ This is a demo. Before real use it would need:
 
 ## Credits
 
-Landing page photographs, all public domain or CC0, from Wikimedia Commons: Cherry blossoms at the Tidal Basin by Carol M. Highsmith; Great Falls of the Potomac, Assateague Island and Hog Rock Overlook (Catoctin Mountain Park) by the National Park Service; C&O Canal towpath by Bonnachoven. Sources are listed in `frontend/public/entry/photo-credits.json`. Professor portraits are illustrations drawn for this project. Fonts: Manrope, Geist, Geist Mono and Poppins (SIL Open Font License). Icons: Phosphor.
+Landing page photographs, all public domain or CC0, from Wikimedia Commons: Cherry blossoms at the Tidal Basin by Carol M. Highsmith; Great Falls of the Potomac, Assateague Island and Hog Rock Overlook (Catoctin Mountain Park) by the National Park Service; C&O Canal towpath by Bonnachoven. Sources are listed in `frontend/public/entry/photo-credits.json`. Night photographs behind the dark themes, all public domain, from Wikimedia Commons: the United States Capitol at night by Diliff; the Jefferson Memorial at dusk and the Library of Congress Thomas Jefferson Building at night by Carol M. Highsmith (sources in `frontend/public/night/photo-credits.json`). Professor portraits are illustrations drawn for this project. Fonts: Manrope, Geist, Geist Mono and Poppins (SIL Open Font License). Icons: Phosphor.
 
 Made by Kaka Studio.

@@ -35,6 +35,8 @@ src/app
   pipe; each page's data is a stream built with `toLoadState()` for loading, data and error.
 - Every colour comes from the CSS variables in `src/styles/themes.scss` (four themes, chosen on
   `<html data-theme>`); shared building blocks are in `src/styles/app-ui.scss`.
-- The photographs in `public/entry/` are in the public domain or under CC0; `photo-credits.json`
-  next to them lists author, licence and source for each. The professor portraits in
+- The photographs in `public/entry/` (day) and `public/night/` (night) are in the public domain or
+  under CC0; `photo-credits.json` next to each set lists author, licence and source. Signed-in pages
+  show one of them behind frosted glass (`core/theme/backdrop.ts`): drawn from the session's token,
+  so it changes at each sign-in and stays for the session, from the night set in dark themes. The professor portraits in
   `public/assets/professors/` are illustrations made for this project.

@@ -1,5 +1,5 @@
 @let vm = (vm$ | async)!;
-<div class="shell">
+<div class="shell" [style.--backdrop]="vm.backdrop">
   <header class="rail no-print">
     <a class="brand" [routerLink]="vm.nav[0]?.link ?? '/'">
       <span class="brand-mark">K</span>
