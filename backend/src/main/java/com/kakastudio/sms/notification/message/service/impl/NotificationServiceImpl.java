@@ -46,6 +46,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class NotificationServiceImpl implements NotificationService {
 
+  /** The sender shown on notes the system wrote itself. */
+  public static final String SYSTEM_SENDER = "Kaka Student Management";
+
   private final NotificationRepository notifications;
   private final NotificationRecipientRepository recipients;
   private final UserRepository users;
@@ -90,7 +93,7 @@ public class NotificationServiceImpl implements NotificationService {
             everyone.addAll(users.findByRoleAndStatus(Role.PROFESSOR, UserStatus.ACTIVE));
             yield everyone;
           }
-          case SECTION ->
+          case SECTION, PERSONAL ->
               throw new ApiException(
                   HttpStatus.BAD_REQUEST,
                   ErrorCode.VALIDATION_FAILED,
@@ -236,10 +239,11 @@ public class NotificationServiceImpl implements NotificationService {
         row.getId(),
         n.getSubject(),
         n.getBody(),
-        n.getSender().fullName(),
+        n.getSender() == null ? SYSTEM_SENDER : n.getSender().fullName(),
         n.getAudience(),
         n.getSection() == null ? null : n.getSection().code(),
         n.getCreatedAt(),
-        row.getReadAt() != null);
+        row.getReadAt() != null,
+        row.getEmailOutboxId() != null);
   }
 }

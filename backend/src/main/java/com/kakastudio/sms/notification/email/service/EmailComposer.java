@@ -18,6 +18,8 @@ public interface EmailComposer {
 
   EmailMessage graduationRejected(User user);
 
+  EmailMessage sectionAssigned(User professor, String section, String semester, String schedule);
+
   /** A notification an administrator or professor wrote; {@code body} is plain text. */
   EmailMessage notification(User recipient, String subject, String body, String senderName);
 }

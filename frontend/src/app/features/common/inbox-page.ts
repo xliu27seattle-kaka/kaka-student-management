@@ -23,7 +23,10 @@ import { SkeletonRows } from '../../shared/ui/skeleton-rows';
         <div>
           <span class="eyebrow">Inbox</span>
           <h1>Notifications</h1>
-          <p>Messages from the registrar and your professors. Each one was also emailed to you.</p>
+          <p>
+            Everything about your account in one place: news from the registrar, your professors and
+            the system.
+          </p>
         </div>
         <button type="button" class="btn btn-ghost" (click)="readAll()">
           <i class="ph ph-checks" aria-hidden="true"></i>Mark all read
@@ -57,6 +60,11 @@ import { SkeletonRows } from '../../shared/ui/skeleton-rows';
               </button>
               @if (open === item.id) {
                 <p class="body">{{ item.body }}</p>
+                @if (item.emailed) {
+                  <p class="emailed">
+                    <i class="ph ph-envelope-simple" aria-hidden="true"></i>Also sent to your email
+                  </p>
+                }
               }
             </article>
           } @empty {
@@ -123,8 +131,16 @@ import { SkeletonRows } from '../../shared/ui/skeleton-rows';
         font-weight: 700;
       }
     }
+    .emailed {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 24px 16px 46px;
+      font-size: 12px;
+      color: var(--ink-3);
+    }
     .body {
-      padding: 0 24px 20px 46px;
+      padding: 0 24px 12px 46px;
       white-space: pre-line;
       line-height: 22px;
       animation: rise 0.35s var(--ease);

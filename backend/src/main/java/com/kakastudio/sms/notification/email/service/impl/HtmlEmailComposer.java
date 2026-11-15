@@ -93,6 +93,24 @@ public class HtmlEmailComposer implements EmailComposer {
   }
 
   @Override
+  public EmailMessage sectionAssigned(
+      User professor, String section, String semester, String schedule) {
+    return message(
+        professor,
+        "You teach " + section + " in " + semester,
+        paragraph("Hello " + esc(professor.getFirstName()) + ",")
+            + paragraph(
+                "You have been assigned <strong>"
+                    + esc(section)
+                    + "</strong> in "
+                    + esc(semester)
+                    + ": "
+                    + esc(schedule)
+                    + ".")
+            + paragraph("The class list appears on your Teaching page once students enroll."));
+  }
+
+  @Override
   public EmailMessage notification(User recipient, String subject, String body, String senderName) {
     String text = esc(body).replace("\r\n", "\n").replace("\n", "<br>");
     return message(

@@ -8,7 +8,7 @@ import com.kakastudio.sms.common.paging.PageResponse;
 import com.kakastudio.sms.enrollment.domain.EnrollmentStatus;
 import com.kakastudio.sms.enrollment.repository.EnrollmentRepository;
 import com.kakastudio.sms.notification.email.service.EmailComposer;
-import com.kakastudio.sms.notification.email.service.EmailOutboxService;
+import com.kakastudio.sms.notification.message.service.SystemNotices;
 import com.kakastudio.sms.semester.domain.SemesterStatus;
 import com.kakastudio.sms.student.domain.Student;
 import com.kakastudio.sms.student.dto.RegisterRequest;
@@ -39,12 +39,19 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class StudentServiceImpl implements StudentService {
 
+  /**
+   * Inbox note for a new account. The email carries the temporary password; the note never does.
+   */
+  public static final String ACCOUNT_CREATED_NOTE =
+      "An administrator created your account. A temporary password was sent to your email"
+          + " address; change it from your Account page.";
+
   private final StudentRepository students;
   private final UserAccountService accounts;
   private final StudentNumberGenerator numbers;
   private final TemporaryPasswordGenerator temporaryPasswords;
   private final EmailComposer emails;
-  private final EmailOutboxService outbox;
+  private final SystemNotices notices;
   private final StudentMapper mapper;
   private final EnrollmentRepository enrollments;
   private final Clock clock;
@@ -55,7 +62,7 @@ public class StudentServiceImpl implements StudentService {
       StudentNumberGenerator numbers,
       TemporaryPasswordGenerator temporaryPasswords,
       EmailComposer emails,
-      EmailOutboxService outbox,
+      SystemNotices notices,
       StudentMapper mapper,
       EnrollmentRepository enrollments,
       Clock clock) {
@@ -64,7 +71,7 @@ public class StudentServiceImpl implements StudentService {
     this.numbers = numbers;
     this.temporaryPasswords = temporaryPasswords;
     this.emails = emails;
-    this.outbox = outbox;
+    this.notices = notices;
     this.mapper = mapper;
     this.enrollments = enrollments;
     this.clock = clock;
@@ -87,7 +94,7 @@ public class StudentServiceImpl implements StudentService {
                 Role.STUDENT,
                 UserStatus.PENDING));
     Student student = students.save(new Student(user, nextStudentNumber()));
-    outbox.enqueue(emails.registrationReceived(user, student.getStudentNo()));
+    announceRegistration(user, student);
     return new RegisterResponse(student.getStudentNo(), user.getStatus());
   }
 
@@ -100,7 +107,7 @@ public class StudentServiceImpl implements StudentService {
     accounts.changeDetails(user, user.getEmail(), request.firstName(), request.lastName());
     accounts.changePassword(user, request.password());
     accounts.changeStatus(user, UserStatus.REJECTED, UserStatus.PENDING);
-    outbox.enqueue(emails.registrationReceived(user, student.getStudentNo()));
+    announceRegistration(user, student);
     return new RegisterResponse(student.getStudentNo(), user.getStatus());
   }
 
@@ -133,7 +140,7 @@ public class StudentServiceImpl implements StudentService {
                 Role.STUDENT,
                 UserStatus.ACTIVE));
     Student student = students.save(new Student(user, nextStudentNumber()));
-    outbox.enqueue(emails.accountCreated(user, temporaryPassword));
+    notices.send(user, emails.accountCreated(user, temporaryPassword), ACCOUNT_CREATED_NOTE);
     return mapper.toResponse(student);
   }
 
@@ -150,7 +157,10 @@ public class StudentServiceImpl implements StudentService {
   @Transactional
   public StudentResponse approve(Long id) {
     Student student = changeStatus(id, UserStatus.PENDING, UserStatus.ACTIVE);
-    outbox.enqueue(emails.accountApproved(student.getUser()));
+    notices.send(
+        student.getUser(),
+        emails.accountApproved(student.getUser()),
+        "Your registration was approved. Welcome to Kaka Student Management.");
     return mapper.toResponse(student);
   }
 
@@ -158,7 +168,10 @@ public class StudentServiceImpl implements StudentService {
   @Transactional
   public StudentResponse reject(Long id) {
     Student student = changeStatus(id, UserStatus.PENDING, UserStatus.REJECTED);
-    outbox.enqueue(emails.accountRejected(student.getUser()));
+    notices.send(
+        student.getUser(),
+        emails.accountRejected(student.getUser()),
+        "Your registration was not approved. You can register again with the same email address.");
     return mapper.toResponse(student);
   }
 
@@ -201,6 +214,23 @@ public class StudentServiceImpl implements StudentService {
     enrollments.deleteByStudentId(id); // only dropped sections are left, and they leave no trace
     students.delete(student);
     accounts.delete(student.getUser());
+  }
+
+  /** The applicant hears that it arrived; the administrators that it waits for them. */
+  private void announceRegistration(User user, Student student) {
+    notices.send(
+        user,
+        emails.registrationReceived(user, student.getStudentNo()),
+        "Your student number is "
+            + student.getStudentNo()
+            + ". An administrator will review your registration; you can sign in once it is"
+            + " approved.");
+    notices.tellAdministrators(
+        "New registration: " + user.fullName(),
+        user.fullName()
+            + " ("
+            + user.getEmail()
+            + ") registered and is waiting for approval. Approve or reject it under Students.");
   }
 
   private Student changeStatus(Long id, UserStatus from, UserStatus to) {

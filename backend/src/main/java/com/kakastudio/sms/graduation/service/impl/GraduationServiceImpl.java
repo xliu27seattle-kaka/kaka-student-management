@@ -15,7 +15,7 @@ import com.kakastudio.sms.graduation.repository.GraduationApplicationRepository;
 import com.kakastudio.sms.graduation.service.CertificateNumberGenerator;
 import com.kakastudio.sms.graduation.service.GraduationService;
 import com.kakastudio.sms.notification.email.service.EmailComposer;
-import com.kakastudio.sms.notification.email.service.EmailOutboxService;
+import com.kakastudio.sms.notification.message.service.SystemNotices;
 import com.kakastudio.sms.semester.domain.SemesterStatus;
 import com.kakastudio.sms.student.domain.AcademicStatus;
 import com.kakastudio.sms.student.domain.Student;
@@ -41,7 +41,7 @@ public class GraduationServiceImpl implements GraduationService {
   private final TranscriptService transcripts;
   private final CertificateNumberGenerator certificates;
   private final EmailComposer emails;
-  private final EmailOutboxService outbox;
+  private final SystemNotices notices;
   private final Clock clock;
 
   public GraduationServiceImpl(
@@ -51,7 +51,7 @@ public class GraduationServiceImpl implements GraduationService {
       TranscriptService transcripts,
       CertificateNumberGenerator certificates,
       EmailComposer emails,
-      EmailOutboxService outbox,
+      SystemNotices notices,
       Clock clock) {
     this.students = students;
     this.applications = applications;
@@ -59,7 +59,7 @@ public class GraduationServiceImpl implements GraduationService {
     this.transcripts = transcripts;
     this.certificates = certificates;
     this.emails = emails;
-    this.outbox = outbox;
+    this.notices = notices;
     this.clock = clock;
   }
 
@@ -77,11 +77,20 @@ public class GraduationServiceImpl implements GraduationService {
             .findWithLockById(studentId)
             .orElseThrow(
                 () -> new NotFoundException(ErrorCode.STUDENT_NOT_FOUND, "Student not found"));
-    List<String> reasons = reasons(student, transcripts.earnedCredits(studentId));
+    int earned = transcripts.earnedCredits(studentId);
+    List<String> reasons = reasons(student, earned);
     if (!reasons.isEmpty()) {
       throw new RuleViolationException(ErrorCode.GRADUATION_NOT_ELIGIBLE, reasons.getFirst());
     }
     applications.save(new GraduationApplication(student, clock.instant()));
+    notices.tellAdministrators(
+        "Graduation application: " + student.getUser().fullName(),
+        student.getUser().fullName()
+            + " ("
+            + student.getStudentNo()
+            + ") applied to graduate with "
+            + earned
+            + " earned credits. Decide under Graduation.");
     return statusOf(student);
   }
 
@@ -124,7 +133,12 @@ public class GraduationServiceImpl implements GraduationService {
     }
     application.setStatus(ApplicationStatus.APPROVED);
     application.setDecidedAt(now);
-    outbox.enqueue(emails.graduationApproved(student.getUser(), student.getCertificateNo()));
+    notices.send(
+        student.getUser(),
+        emails.graduationApproved(student.getUser(), student.getCertificateNo()),
+        "Congratulations: your graduation was approved. Your certificate number is "
+            + student.getCertificateNo()
+            + "; print the certificate from the Graduation page.");
     return toDto(application);
   }
 
@@ -134,7 +148,11 @@ public class GraduationServiceImpl implements GraduationService {
     GraduationApplication application = pending(applicationId);
     application.setStatus(ApplicationStatus.REJECTED);
     application.setDecidedAt(clock.instant());
-    outbox.enqueue(emails.graduationRejected(application.getStudent().getUser()));
+    notices.send(
+        application.getStudent().getUser(),
+        emails.graduationRejected(application.getStudent().getUser()),
+        "Your graduation application was not approved this time. You can apply again from the"
+            + " Graduation page.");
     return toDto(application);
   }
 

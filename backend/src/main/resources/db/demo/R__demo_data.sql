@@ -165,6 +165,22 @@ begin
   end loop;
 end $$;
 
+-- A note the system wrote to one person (no sender), optionally with the email it sent.
+create or replace function pg_temp.system_note(p_to text, p_subject text, p_body text, p_at timestamptz, p_emailed boolean, p_read boolean)
+returns void language plpgsql as $$
+declare v_id bigint; v_user bigint; v_outbox bigint;
+begin
+  select id into v_user from users where email = p_to;
+  insert into notifications (sender_id, audience, subject, body, recipient_count, created_at)
+  values (null, 'PERSONAL', p_subject, p_body, 1, p_at) returning id into v_id;
+  if p_emailed then
+    insert into email_outbox (recipient, subject, html, status, attempts, created_at, sent_at, next_attempt_at)
+    values (p_to, p_subject, '(removed)', 'SENT', 1, p_at, p_at, p_at) returning id into v_outbox;
+  end if;
+  insert into notification_recipients (notification_id, user_id, read_at, email_outbox_id)
+  values (v_id, v_user, case when p_read then p_at + interval '1 hour' end, v_outbox);
+end $$;
+
 -- ---------- the data ----------
 
 do $$
@@ -396,4 +412,18 @@ begin
     timestamptz '2026-11-11 14:00+00',
     array['lena.fischer@uni.example', 'noah.kim@uni.example'],
     array[]::text[]);
+  -- system notes: what the registrar told people, and two alerts waiting for the administrator
+  perform pg_temp.system_note('lena.fischer@uni.example', 'Your account is approved',
+    'Your registration was approved. Welcome to Kaka Student Management.', timestamptz '2026-07-02 09:00+00', true, true);
+  perform pg_temp.system_note('grace.okonkwo@uni.example', 'Congratulations on your graduation',
+    'Congratulations: your graduation was approved. Your certificate number is KS-2026-0001; print the certificate from the Graduation page.',
+    timestamptz '2026-05-20 15:00+00', true, false);
+  perform pg_temp.system_note('amara.okafor@faculty.example', 'You teach CS401-A Distributed Systems in Spring 2027',
+    'You teach CS401-A Distributed Systems in Spring 2027: Mon 10:00–11:15, Wed 10:00–11:15 in Hall A 101.',
+    timestamptz '2026-10-20 10:00+00', true, false);
+  perform pg_temp.system_note('admin@kaka.example', 'Graduation application: Zara Ahmed',
+    'Zara Ahmed applied to graduate with 32 earned credits. Decide under Graduation.', timestamptz '2026-11-02 11:30+00', false, false);
+  perform pg_temp.system_note('admin@kaka.example', 'New registration: Omar Haddad',
+    'Omar Haddad (omar.haddad@uni.example) registered and is waiting for approval. Approve or reject it under Students.',
+    timestamptz '2026-11-12 16:20+00', false, false);
 end $$;

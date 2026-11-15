@@ -203,4 +203,26 @@ class NotificationServiceImplTest {
     service.markRead(11L, 5L);
     assertThat(row.getReadAt()).isNotNull();
   }
+
+  @Test
+  void aSystemNoteIsFromTheRegistrarAndSaysItWasEmailed() {
+    NotificationRecipient row =
+        new NotificationRecipient(
+            new Notification(
+                null,
+                Audience.PERSONAL,
+                null,
+                "Your account is approved",
+                "Welcome!",
+                Instant.now()),
+            student1);
+    row.setEmailOutboxId(42L);
+    when(recipients.findInbox(org.mockito.ArgumentMatchers.eq(11L), any()))
+        .thenReturn(new org.springframework.data.domain.PageImpl<>(List.of(row)));
+
+    var item = service.inbox(11L, 0, 20).items().getFirst();
+
+    assertThat(item.senderName()).isEqualTo("Kaka Student Management");
+    assertThat(item.emailed()).isTrue();
+  }
 }

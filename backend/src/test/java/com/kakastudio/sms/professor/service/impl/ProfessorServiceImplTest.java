@@ -14,6 +14,9 @@ import com.kakastudio.sms.common.error.ErrorCode;
 import com.kakastudio.sms.notification.email.dto.EmailMessage;
 import com.kakastudio.sms.notification.email.service.EmailOutboxService;
 import com.kakastudio.sms.notification.email.service.impl.HtmlEmailComposer;
+import com.kakastudio.sms.notification.message.repository.NotificationRecipientRepository;
+import com.kakastudio.sms.notification.message.repository.NotificationRepository;
+import com.kakastudio.sms.notification.message.service.impl.SystemNoticesImpl;
 import com.kakastudio.sms.professor.domain.AwardEntry;
 import com.kakastudio.sms.professor.domain.ExperienceEntry;
 import com.kakastudio.sms.professor.domain.Professor;
@@ -58,10 +61,14 @@ class ProfessorServiceImplTest {
   private final EmailOutboxService outbox = mock(EmailOutboxService.class);
   private final CurrentUserProvider currentUser = mock(CurrentUserProvider.class);
   private final SectionRepository sections = mock(SectionRepository.class);
+  private final NotificationRepository notifications = mock(NotificationRepository.class);
+  private final NotificationRecipientRepository recipients =
+      mock(NotificationRecipientRepository.class);
   private ProfessorServiceImpl service;
 
   @BeforeEach
   void setUp() {
+    when(notifications.save(any())).thenAnswer(call -> call.getArgument(0));
     when(passwordEncoder.encode(any())).thenAnswer(call -> "encoded:" + call.getArgument(0));
     when(users.save(any())).thenAnswer(call -> call.getArgument(0));
     when(professors.save(any())).thenAnswer(call -> call.getArgument(0));
@@ -74,7 +81,8 @@ class ProfessorServiceImplTest {
             numbers,
             temporaryPasswords,
             new HtmlEmailComposer(),
-            outbox,
+            new SystemNoticesImpl(
+                outbox, notifications, recipients, users, java.time.Clock.systemUTC()),
             new ProfessorMapper(),
             currentUser,
             sections);

@@ -31,8 +31,9 @@ public class Notification {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @ManyToOne(fetch = FetchType.LAZY, optional = false)
-  @JoinColumn(name = "sender_id", nullable = false)
+  /** {@code null} for a note the system wrote. */
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "sender_id")
   private User sender;
 
   @Enumerated(EnumType.STRING)

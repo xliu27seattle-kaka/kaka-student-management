@@ -55,7 +55,7 @@ export class AppShell implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.themes.attach();
-    if (this.auth.snapshot?.user.role !== 'ADMIN') this.unread.refresh();
+    this.unread.refresh();
   }
 
   ngOnDestroy(): void {

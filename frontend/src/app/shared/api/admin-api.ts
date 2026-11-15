@@ -6,6 +6,9 @@ import {
   CourseDetail,
   CourseRequest,
   Dashboard,
+  EmailLogEntry,
+  EmailStatus,
+  EmailSummary,
   Enrollment,
   GraduationApplication,
   Offering,
@@ -208,6 +211,19 @@ export class AdminApi {
 
   sentNotifications(): Observable<SentNotification[]> {
     return this.http.get<SentNotification[]>(`${ADMIN}/notifications`);
+  }
+
+  // ── email delivery log ──
+  emails(filter: {
+    status?: EmailStatus | '';
+    q?: string;
+    page?: number;
+  }): Observable<Page<EmailLogEntry>> {
+    return this.http.get<Page<EmailLogEntry>>(`${ADMIN}/emails`, { params: params(filter) });
+  }
+
+  emailSummary(): Observable<EmailSummary> {
+    return this.http.get<EmailSummary>(`${ADMIN}/emails/summary`);
   }
 }
 

@@ -17,6 +17,10 @@ import com.kakastudio.sms.enrollment.repository.EnrollmentRepository;
 import com.kakastudio.sms.notification.email.dto.EmailMessage;
 import com.kakastudio.sms.notification.email.service.EmailOutboxService;
 import com.kakastudio.sms.notification.email.service.impl.HtmlEmailComposer;
+import com.kakastudio.sms.notification.message.domain.Notification;
+import com.kakastudio.sms.notification.message.repository.NotificationRecipientRepository;
+import com.kakastudio.sms.notification.message.repository.NotificationRepository;
+import com.kakastudio.sms.notification.message.service.impl.SystemNoticesImpl;
 import com.kakastudio.sms.section.domain.Section;
 import com.kakastudio.sms.semester.domain.SemesterStatus;
 import com.kakastudio.sms.student.domain.AcademicStatus;
@@ -63,6 +67,9 @@ class StudentServiceImplTest {
       mock(TemporaryPasswordGenerator.class);
   private final EmailOutboxService outbox = mock(EmailOutboxService.class);
   private final EnrollmentRepository enrollments = mock(EnrollmentRepository.class);
+  private final NotificationRepository notifications = mock(NotificationRepository.class);
+  private final NotificationRecipientRepository recipients =
+      mock(NotificationRecipientRepository.class);
   private StudentServiceImpl service;
 
   @BeforeEach
@@ -72,6 +79,8 @@ class StudentServiceImplTest {
     when(students.save(any())).thenAnswer(call -> call.getArgument(0));
     when(numbers.next(2026)).thenReturn("S2026-0001");
     when(temporaryPasswords.generate()).thenReturn("Temp1234abcd");
+    when(notifications.save(any())).thenAnswer(call -> call.getArgument(0));
+    when(outbox.enqueue(any())).thenReturn(99L);
     service =
         new StudentServiceImpl(
             students,
@@ -79,7 +88,8 @@ class StudentServiceImplTest {
             numbers,
             temporaryPasswords,
             new HtmlEmailComposer(),
-            outbox,
+            new SystemNoticesImpl(
+                outbox, notifications, recipients, users, Clock.fixed(NOW, ZoneOffset.UTC)),
             new StudentMapper(),
             enrollments,
             Clock.fixed(NOW, ZoneOffset.UTC));
@@ -326,5 +336,46 @@ class StudentServiceImplTest {
 
     verify(enrollments).deleteByStudentId(3L);
     verify(students).delete(student);
+  }
+
+  private List<Notification> savedNotes() {
+    ArgumentCaptor<Notification> notes = ArgumentCaptor.forClass(Notification.class);
+    verify(notifications, org.mockito.Mockito.atLeastOnce()).save(notes.capture());
+    return notes.getAllValues();
+  }
+
+  @Test
+  void approvalAlsoLandsInTheStudentsInbox() {
+    stored(3L, UserStatus.PENDING);
+
+    service.approve(3L);
+
+    assertThat(savedNotes())
+        .extracting(Notification::getSubject)
+        .contains("Your account is approved");
+  }
+
+  @Test
+  void aRegistrationAlertsTheAdministrators() {
+    when(users.findByEmail("omar.haddad@uni.example")).thenReturn(Optional.empty());
+    when(users.findByRoleAndStatus(Role.ADMIN, UserStatus.ACTIVE))
+        .thenReturn(List.of(Users.activeAdmin(1L)));
+
+    service.register(new RegisterRequest("omar.haddad@uni.example", "Omar", "Haddad", "Passw0rd1"));
+
+    assertThat(savedNotes())
+        .extracting(Notification::getSubject)
+        .contains("We received your registration", "New registration: Omar Haddad");
+  }
+
+  @Test
+  void theInboxNoteOfANewAccountNeverRepeatsTheTemporaryPassword() {
+    when(users.findByEmail("omar.haddad@uni.example")).thenReturn(Optional.empty());
+
+    service.create(new StudentCreateRequest("omar.haddad@uni.example", "Omar", "Haddad"));
+
+    assertThat(savedNotes())
+        .extracting(Notification::getBody)
+        .noneMatch(body -> body.contains("Temp1234abcd"));
   }
 }

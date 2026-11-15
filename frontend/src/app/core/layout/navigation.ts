@@ -20,6 +20,8 @@ export const NAVIGATION: Record<Role, NavItem[]> = {
     { label: 'Semesters', icon: 'ph-calendar-blank', link: '/admin/semesters' },
     { label: 'Graduation', icon: 'ph-graduation-cap', link: '/admin/graduation' },
     { label: 'Notifications', icon: 'ph-megaphone', link: '/admin/notifications' },
+    { label: 'Email log', icon: 'ph-envelope-simple', link: '/admin/emails' },
+    { label: 'Inbox', icon: 'ph-bell', link: '/admin/inbox', badge: 'unread' },
   ],
   PROFESSOR: [
     { label: 'Teaching', icon: 'ph-squares-four', link: '/professor', exact: true },

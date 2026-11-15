@@ -77,11 +77,17 @@ import { StatusBadge } from '../../shared/ui/status-badge';
             <span class="kpi-label">Courses offered</span>
             <span class="kpi-value" [appCountUp]="d.activeCourses"></span>
           </a>
-          <div class="kpi rise" style="--i: 6" [class.attention]="d.failedEmails > 0">
+          <a
+            class="kpi rise"
+            style="--i: 6"
+            routerLink="/admin/emails"
+            [queryParams]="{ status: 'FAILED' }"
+            [class.attention]="d.failedEmails > 0"
+          >
             <span class="kpi-label">Emails given up</span>
             <span class="kpi-value" [appCountUp]="d.failedEmails"></span>
             <span class="kpi-note">after every retry failed</span>
-          </div>
+          </a>
         </section>
 
         <section class="card rise" style="--i: 7">

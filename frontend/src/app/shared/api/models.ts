@@ -271,7 +271,7 @@ export interface GraduationStatus {
 }
 
 // ── notifications ──
-export type Audience = 'ALL_STUDENTS' | 'ALL_PROFESSORS' | 'EVERYONE' | 'SECTION';
+export type Audience = 'ALL_STUDENTS' | 'ALL_PROFESSORS' | 'EVERYONE' | 'SECTION' | 'PERSONAL';
 
 export interface InboxItem {
   id: number;
@@ -282,6 +282,8 @@ export interface InboxItem {
   sectionCode: string | null;
   createdAt: string;
   read: boolean;
+  /** The same message also went out by email. */
+  emailed: boolean;
 }
 
 export interface SentNotification {
@@ -305,4 +307,25 @@ export interface Dashboard {
   pendingGraduations: number;
   failedEmails: number;
   semesters: Semester[];
+}
+
+export type EmailStatus = 'PENDING' | 'SENT' | 'FAILED';
+
+/** One row of the email delivery log; never the body. */
+export interface EmailLogEntry {
+  id: number;
+  recipient: string;
+  subject: string;
+  status: EmailStatus;
+  attempts: number;
+  lastError: string | null;
+  createdAt: string;
+  sentAt: string | null;
+  nextAttemptAt: string;
+}
+
+export interface EmailSummary {
+  pending: number;
+  sent: number;
+  failed: number;
 }

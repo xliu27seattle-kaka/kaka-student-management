@@ -177,6 +177,12 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/admin/notifications-page').then((m) => m.AdminNotificationsPage),
       },
+      {
+        path: 'emails',
+        title: page('Email log'),
+        loadComponent: () => import('./features/admin/email-log-page').then((m) => m.EmailLogPage),
+      },
+      inboxPage,
       accountPage,
     ],
   },

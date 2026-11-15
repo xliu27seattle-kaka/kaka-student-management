@@ -10,7 +10,9 @@ import static java.time.DayOfWeek.WEDNESDAY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.kakastudio.sms.common.error.ApiException;
@@ -19,6 +21,8 @@ import com.kakastudio.sms.course.domain.Course;
 import com.kakastudio.sms.course.repository.CourseRepository;
 import com.kakastudio.sms.enrollment.domain.EnrollmentStatus;
 import com.kakastudio.sms.enrollment.repository.EnrollmentRepository;
+import com.kakastudio.sms.notification.email.service.impl.HtmlEmailComposer;
+import com.kakastudio.sms.notification.message.service.SystemNotices;
 import com.kakastudio.sms.professor.domain.Professor;
 import com.kakastudio.sms.professor.repository.ProfessorRepository;
 import com.kakastudio.sms.section.domain.Section;
@@ -37,6 +41,7 @@ import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 class SectionServiceImplTest {
 
@@ -45,6 +50,7 @@ class SectionServiceImplTest {
   private final CourseRepository courses = mock(CourseRepository.class);
   private final ProfessorRepository professors = mock(ProfessorRepository.class);
   private final EnrollmentRepository enrollments = mock(EnrollmentRepository.class);
+  private final SystemNotices notices = mock(SystemNotices.class);
   private SectionServiceImpl service;
 
   private Course cs101;
@@ -67,7 +73,14 @@ class SectionServiceImplTest {
     when(sections.findByProfessorIdAndSemesterId(any(), any())).thenReturn(List.of());
     service =
         new SectionServiceImpl(
-            sections, semesters, courses, professors, enrollments, new SectionMapper());
+            sections,
+            semesters,
+            courses,
+            professors,
+            enrollments,
+            new SectionMapper(),
+            new HtmlEmailComposer(),
+            notices);
   }
 
   private static MeetingRequest slot(DayOfWeek day, String start, String end) {
@@ -219,5 +232,14 @@ class SectionServiceImplTest {
             () -> service.update(9L, request(1L, 25, slot(MONDAY, "10:00", "11:00"))));
 
     assertThat(error.code()).isEqualTo(ErrorCode.SECTION_NOT_EDITABLE);
+  }
+
+  @Test
+  void theProfessorIsToldAboutANewSection() {
+    service.create(5L, request(1L, 20, slot(MONDAY, "10:00", "11:15")));
+
+    ArgumentCaptor<String> note = ArgumentCaptor.forClass(String.class);
+    verify(notices).send(eq(okafor.getUser()), any(), note.capture());
+    assertThat(note.getValue()).contains("CS101-A", "Mon 10:00–11:15");
   }
 }

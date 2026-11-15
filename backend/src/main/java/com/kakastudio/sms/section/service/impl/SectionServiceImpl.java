@@ -8,6 +8,8 @@ import com.kakastudio.sms.course.repository.CourseRepository;
 import com.kakastudio.sms.enrollment.domain.EnrollmentStatus;
 import com.kakastudio.sms.enrollment.repository.EnrollmentRepository;
 import com.kakastudio.sms.enrollment.repository.SectionSeatCount;
+import com.kakastudio.sms.notification.email.service.EmailComposer;
+import com.kakastudio.sms.notification.message.service.SystemNotices;
 import com.kakastudio.sms.professor.domain.Professor;
 import com.kakastudio.sms.professor.repository.ProfessorRepository;
 import com.kakastudio.sms.section.domain.MeetingTime;
@@ -40,6 +42,8 @@ public class SectionServiceImpl implements SectionService {
   private final ProfessorRepository professors;
   private final EnrollmentRepository enrollments;
   private final SectionMapper mapper;
+  private final EmailComposer emails;
+  private final SystemNotices notices;
 
   public SectionServiceImpl(
       SectionRepository sections,
@@ -47,13 +51,17 @@ public class SectionServiceImpl implements SectionService {
       CourseRepository courses,
       ProfessorRepository professors,
       EnrollmentRepository enrollments,
-      SectionMapper mapper) {
+      SectionMapper mapper,
+      EmailComposer emails,
+      SystemNotices notices) {
     this.sections = sections;
     this.semesters = semesters;
     this.courses = courses;
     this.professors = professors;
     this.enrollments = enrollments;
     this.mapper = mapper;
+    this.emails = emails;
+    this.notices = notices;
   }
 
   @Override
@@ -106,7 +114,9 @@ public class SectionServiceImpl implements SectionService {
             Objects.requireNonNullElse(request.capacity(), Section.DEFAULT_CAPACITY),
             request.room());
     section.replaceMeetings(meetings);
-    return mapper.toResponse(sections.save(section), 0);
+    Section saved = sections.save(section);
+    tellProfessor(saved);
+    return mapper.toResponse(saved, 0);
   }
 
   @Override
@@ -156,9 +166,13 @@ public class SectionServiceImpl implements SectionService {
         section.getProfessor().getId().equals(request.professorId())
             ? section.getProfessor()
             : activeProfessor(request.professorId());
+    boolean newProfessor = !professor.getId().equals(section.getProfessor().getId());
     checkProfessorIsFree(professor, section.getSemester(), meetings, section.getId());
     section.setProfessor(professor);
     section.replaceMeetings(meetings);
+    if (newProfessor) {
+      tellProfessor(section);
+    }
   }
 
   @Override
@@ -180,6 +194,21 @@ public class SectionServiceImpl implements SectionService {
         .stream()
         .map(section -> mapper.toResponse(section, enrolled(section.getId())))
         .toList();
+  }
+
+  /** The professor hears about a section they now teach, by email and in their inbox. */
+  private void tellProfessor(Section section) {
+    String schedule =
+        section.getMeetings().stream().map(MeetingTime::label).collect(Collectors.joining(", "))
+            + (section.getRoom() == null || section.getRoom().isBlank()
+                ? ""
+                : " in " + section.getRoom());
+    String sectionName = section.code() + " " + section.getCourse().getTitle();
+    String semester = section.getSemester().getName();
+    notices.send(
+        section.getProfessor().getUser(),
+        emails.sectionAssigned(section.getProfessor().getUser(), sectionName, semester, schedule),
+        "You teach " + sectionName + " in " + semester + ": " + schedule + ".");
   }
 
   /** Checks each meeting is valid and that the section's own meetings do not collide. */

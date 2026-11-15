@@ -17,7 +17,7 @@ public interface NotificationRecipientRepository
   /** A user's inbox, newest first, with the notification and its sender loaded. */
   @Query(
       value =
-          "select r from NotificationRecipient r join fetch r.notification n join fetch n.sender"
+          "select r from NotificationRecipient r join fetch r.notification n left join fetch n.sender"
               + " left join fetch n.section s left join fetch s.course where r.user.id = :userId",
       countQuery = "select count(r) from NotificationRecipient r where r.user.id = :userId")
   Page<NotificationRecipient> findInbox(@Param("userId") Long userId, Pageable pageable);

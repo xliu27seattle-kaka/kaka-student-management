@@ -6,6 +6,7 @@ import jakarta.persistence.LockModeType;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
@@ -15,6 +16,14 @@ import org.springframework.data.repository.query.Param;
 public interface EmailOutboxRepository extends JpaRepository<EmailOutbox, Long> {
 
   long countByStatus(OutboxStatus status);
+
+  /** The delivery log: optional status, optional LIKE pattern on recipient or subject. */
+  @Query(
+      "select o from EmailOutbox o where (:status is null or o.status = :status)"
+          + " and (:pattern is null or lower(o.recipient) like :pattern escape '!'"
+          + " or lower(o.subject) like :pattern escape '!')")
+  Page<EmailOutbox> search(
+      @Param("status") OutboxStatus status, @Param("pattern") String pattern, Pageable pageable);
 
   /**
    * Loads one row and locks it until the transaction ends, so the after-commit dispatch and the

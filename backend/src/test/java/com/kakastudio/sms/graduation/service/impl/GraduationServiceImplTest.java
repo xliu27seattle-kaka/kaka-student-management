@@ -28,11 +28,19 @@ import com.kakastudio.sms.graduation.service.CertificateNumberGenerator;
 import com.kakastudio.sms.notification.email.dto.EmailMessage;
 import com.kakastudio.sms.notification.email.service.EmailOutboxService;
 import com.kakastudio.sms.notification.email.service.impl.HtmlEmailComposer;
+import com.kakastudio.sms.notification.message.domain.Notification;
+import com.kakastudio.sms.notification.message.repository.NotificationRecipientRepository;
+import com.kakastudio.sms.notification.message.repository.NotificationRepository;
+import com.kakastudio.sms.notification.message.service.impl.SystemNoticesImpl;
 import com.kakastudio.sms.semester.domain.SemesterStatus;
 import com.kakastudio.sms.student.domain.AcademicStatus;
 import com.kakastudio.sms.student.domain.Student;
 import com.kakastudio.sms.student.repository.StudentRepository;
+import com.kakastudio.sms.testsupport.Users;
 import com.kakastudio.sms.transcript.service.TranscriptService;
+import com.kakastudio.sms.user.domain.Role;
+import com.kakastudio.sms.user.domain.UserStatus;
+import com.kakastudio.sms.user.repository.UserRepository;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -52,6 +60,10 @@ class GraduationServiceImplTest {
   private final TranscriptService transcripts = mock(TranscriptService.class);
   private final CertificateNumberGenerator certificates = mock(CertificateNumberGenerator.class);
   private final EmailOutboxService outbox = mock(EmailOutboxService.class);
+  private final NotificationRepository notifications = mock(NotificationRepository.class);
+  private final NotificationRecipientRepository recipients =
+      mock(NotificationRecipientRepository.class);
+  private final UserRepository users = mock(UserRepository.class);
   private GraduationServiceImpl service;
 
   private final Student lena = student(1L);
@@ -66,12 +78,18 @@ class GraduationServiceImplTest {
             transcripts,
             certificates,
             new HtmlEmailComposer(),
-            outbox,
+            new SystemNoticesImpl(
+                outbox,
+                notifications,
+                recipients,
+                users,
+                Clock.fixed(Instant.parse("2026-12-20T10:00:00Z"), ZoneOffset.UTC)),
             Clock.fixed(Instant.parse("2026-12-20T10:00:00Z"), ZoneOffset.UTC));
     when(students.findById(1L)).thenReturn(Optional.of(lena));
     when(students.findWithLockById(1L)).thenReturn(Optional.of(lena));
     when(applications.save(any())).thenAnswer(call -> call.getArgument(0));
     when(certificates.next(2026)).thenReturn("KS-2026-0001");
+    when(notifications.save(any())).thenAnswer(call -> call.getArgument(0));
   }
 
   @Test
@@ -198,5 +216,18 @@ class GraduationServiceImplTest {
     assertThat(error.code()).isEqualTo(ErrorCode.GRADUATION_NOT_ELIGIBLE);
     assertThat(lena.getAcademicStatus()).isEqualTo(AcademicStatus.ENROLLED);
     assertThat(application.getStatus()).isEqualTo(ApplicationStatus.PENDING);
+  }
+
+  @Test
+  void anApplicationAlertsTheAdministrators() {
+    when(transcripts.earnedCredits(1L)).thenReturn(31);
+    when(users.findByRoleAndStatus(Role.ADMIN, UserStatus.ACTIVE))
+        .thenReturn(List.of(Users.activeAdmin(9L)));
+
+    service.apply(1L);
+
+    ArgumentCaptor<Notification> note = ArgumentCaptor.forClass(Notification.class);
+    verify(notifications).save(note.capture());
+    assertThat(note.getValue().getSubject()).startsWith("Graduation application:");
   }
 }

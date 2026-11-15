@@ -10,6 +10,7 @@ const AUDIENCE_LABEL: Record<string, string> = {
   ALL_PROFESSORS: 'All professors',
   EVERYONE: 'Everyone',
   SECTION: 'Section',
+  PERSONAL: 'Personal',
 };
 
 /** Notifications someone has sent, with how their emails are doing. */

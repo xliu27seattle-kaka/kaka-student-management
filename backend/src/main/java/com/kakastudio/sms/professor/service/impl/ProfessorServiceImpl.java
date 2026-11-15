@@ -6,7 +6,7 @@ import com.kakastudio.sms.common.error.NotFoundException;
 import com.kakastudio.sms.common.paging.PageRequests;
 import com.kakastudio.sms.common.paging.PageResponse;
 import com.kakastudio.sms.notification.email.service.EmailComposer;
-import com.kakastudio.sms.notification.email.service.EmailOutboxService;
+import com.kakastudio.sms.notification.message.service.SystemNotices;
 import com.kakastudio.sms.professor.domain.Professor;
 import com.kakastudio.sms.professor.dto.ProfessorCreateRequest;
 import com.kakastudio.sms.professor.dto.ProfessorProfileRequest;
@@ -24,6 +24,7 @@ import com.kakastudio.sms.section.domain.Section;
 import com.kakastudio.sms.section.repository.SectionRepository;
 import com.kakastudio.sms.security.service.CurrentUserProvider;
 import com.kakastudio.sms.semester.domain.SemesterStatus;
+import com.kakastudio.sms.student.service.impl.StudentServiceImpl;
 import com.kakastudio.sms.user.domain.Role;
 import com.kakastudio.sms.user.domain.User;
 import com.kakastudio.sms.user.domain.UserStatus;
@@ -49,7 +50,7 @@ public class ProfessorServiceImpl
   private final ProfessorNumberGenerator numbers;
   private final TemporaryPasswordGenerator temporaryPasswords;
   private final EmailComposer emails;
-  private final EmailOutboxService outbox;
+  private final SystemNotices notices;
   private final ProfessorMapper mapper;
   private final CurrentUserProvider currentUser;
   private final SectionRepository sections;
@@ -60,7 +61,7 @@ public class ProfessorServiceImpl
       ProfessorNumberGenerator numbers,
       TemporaryPasswordGenerator temporaryPasswords,
       EmailComposer emails,
-      EmailOutboxService outbox,
+      SystemNotices notices,
       ProfessorMapper mapper,
       CurrentUserProvider currentUser,
       SectionRepository sections) {
@@ -69,7 +70,7 @@ public class ProfessorServiceImpl
     this.numbers = numbers;
     this.temporaryPasswords = temporaryPasswords;
     this.emails = emails;
-    this.outbox = outbox;
+    this.notices = notices;
     this.mapper = mapper;
     this.currentUser = currentUser;
     this.sections = sections;
@@ -110,7 +111,10 @@ public class ProfessorServiceImpl
       mapper.applyProfile(request.profile(), professor);
     }
     professors.save(professor);
-    outbox.enqueue(emails.accountCreated(user, temporaryPassword));
+    notices.send(
+        user,
+        emails.accountCreated(user, temporaryPassword),
+        StudentServiceImpl.ACCOUNT_CREATED_NOTE);
     return mapper.toResponse(professor);
   }
 

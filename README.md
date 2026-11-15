@@ -63,7 +63,7 @@ Also in the demo data: `omar.haddad@uni.example` is waiting for approval, `ethan
 | MySQL/PostgreSQL or H2 | PostgreSQL 17, schema managed by Flyway migrations. |
 | RxJS for state | Store services built on `BehaviorSubject`, read with the `async` pipe (`AuthStore`, `ThemeStore`, `EnrollmentStore`, `UnreadStore`, `ConfirmStore`, `ToastStore`). |
 | Backend validation, exception handling, transactions | Bean Validation on request records; typed exceptions mapped to 400/401/403/404/409/422; `@Transactional` services. Enrollment is the showcase transaction: it locks the student row, then the section row, and re-checks every rule. |
-| Backend unit tests | JUnit 5 and Mockito: 247 backend tests (and 19 in the notification service) on services, rules, the grade scale, GPA, cycle detection, the 10-minute rule and lock order; `@WebMvcTest` slices for validation, security (every role against every area) and error bodies. |
+| Backend unit tests | JUnit 5 and Mockito: 257 backend tests (and 19 in the notification service) on services, rules, the grade scale, GPA, cycle detection, the 10-minute rule and lock order; `@WebMvcTest` slices for validation, security (every role against every area) and error bodies. |
 | Public repo, README, runs on localhost | This file; `docker compose up --build`. |
 
 ---
@@ -137,7 +137,7 @@ scripts/smoke-registrar.sh              # catalogue → semester → enrollment 
 scripts/e2e.sh                          # Playwright journeys in Chrome (needs Node and Chrome)
 ```
 
-Test counts: backend 247, notification service 19, frontend 47 (Vitest), Playwright 43, smoke scripts 23 + 32 checks.
+Test counts: backend 257, notification service 19, frontend 47 (Vitest), Playwright 45, smoke scripts 23 + 32 checks.
 
 The Playwright tests and smoke scripts add their own courses, semesters and students with random names, so they can run again and again. Some journeys read the demo semesters (Fall 2026 running, Spring 2027 open), so run them on demo data that has not been walked through the tour: reset with `docker compose down -v && docker compose up --build`.
 
