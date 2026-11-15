@@ -75,7 +75,7 @@ Also in the demo data: `omar.haddad@uni.example` is waiting for approval, `ethan
 3. **Enrollment.** Sign in as Lena and open **Enroll**. Spring 2027 shows every reason a section can be unavailable: already completed, already taking the course this term, prerequisite missing, section full, overlapping another class, less than 10 minutes after another class, already in another section of the course. Hover a section to see it on the weekly timetable; enroll in CS250-A and watch the timetable and the credits change.
 4. **Grading.** Sign in as `amara.okafor@faculty.example` and open **CS320-A** under Fall 2026. The Roster, Grades and Message tabs show the class; the Grades tab previews the letter as you type a score.
 5. **End of semester and graduation.** As the admin, open **Semesters → Fall 2026** and click **End the semester**: the confirmation says Lena has no grade in CS301-A yet, and the server refuses. Sign in as `meilin.chen@faculty.example`, give Lena a score in **CS301-A** under Fall 2026, then end the semester as the admin. Sign in as Noah: he now has 31 credits and can apply for graduation. Approve him under **Graduation**, then print his certificate from his Graduation page.
-6. **Themes.** Pick another theme in the sidebar: Sage Ledger, Midnight & Amber, Graphite & Lime (top navigation) or Cobalt Trust.
+6. **Themes.** Pick another theme in the sidebar: Sage Ledger, Midnight & Amber, Graphite & Lime or Cobalt Trust. Only colours and fonts change; the layout stays the same.
 
 ---
 

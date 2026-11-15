@@ -18,8 +18,8 @@ import { THEMES, ThemeId, ThemeStore } from '../theme/theme-store';
 import { AREA_LABEL, NAVIGATION } from './navigation';
 
 /**
- * The frame around every signed-in page: navigation for the user's role (a sidebar, or a top bar
- * in Graphite & Lime), the theme switcher, the unread badge, and the one confirmation modal and
+ * The frame around every signed-in page: navigation for the user's role (a sidebar, which becomes a top
+ * bar in narrow windows), the theme switcher, the unread badge, and the one confirmation modal and
  * toast stack the pages share.
  */
 @Component({

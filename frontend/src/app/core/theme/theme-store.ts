@@ -7,24 +7,23 @@ export type ThemeId = 'sage' | 'midnight' | 'graphite' | 'cobalt';
 export interface ThemeOption {
   id: ThemeId;
   name: string;
-  /** Graphite & Lime puts the navigation along the top; the others use a sidebar. */
-  layout: 'side' | 'top';
   /** Two colours for the swatch in the switcher. */
   swatch: [string, string];
 }
 
 export const THEMES: readonly ThemeOption[] = [
-  { id: 'sage', name: 'Sage Ledger', layout: 'side', swatch: ['#eef0ec', '#2f6b4f'] },
-  { id: 'midnight', name: 'Midnight & Amber', layout: 'side', swatch: ['#12141c', '#e8a33d'] },
-  { id: 'graphite', name: 'Graphite & Lime', layout: 'top', swatch: ['#1f1f1f', '#b6e018'] },
-  { id: 'cobalt', name: 'Cobalt Trust', layout: 'side', swatch: ['#111a2e', '#2d5bd8'] },
+  { id: 'sage', name: 'Sage Ledger', swatch: ['#eef0ec', '#2f6b4f'] },
+  { id: 'midnight', name: 'Midnight & Amber', swatch: ['#12141c', '#e8a33d'] },
+  { id: 'graphite', name: 'Graphite & Lime', swatch: ['#1f1f1f', '#b6e018'] },
+  { id: 'cobalt', name: 'Cobalt Trust', swatch: ['#111a2e', '#2d5bd8'] },
 ];
 
 export const THEME_STORAGE_KEY = 'kaka.theme';
 const DEFAULT_THEME: ThemeId = 'sage';
 
 /**
- * The chosen theme, remembered in the browser. The app shell attaches it to the page while a user
+ * The chosen theme, remembered in the browser. A theme changes colours, fonts and corner radii
+ * only; the layout is the same in all four. The app shell attaches it to the page while a user
  * is signed in; the sign-in pages always use the default.
  */
 @Injectable({ providedIn: 'root' })

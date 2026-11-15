@@ -1,6 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { firstValueFrom } from 'rxjs';
-import { THEME_STORAGE_KEY, ThemeStore, optionOf } from './theme-store';
+import { THEMES, THEME_STORAGE_KEY, ThemeStore } from './theme-store';
 
 describe('ThemeStore', () => {
   beforeEach(() => {
@@ -40,10 +39,9 @@ describe('ThemeStore', () => {
     expect(document.documentElement.getAttribute('data-theme')).toBeNull();
   });
 
-  it('gives Graphite & Lime the top navigation', async () => {
-    const store = TestBed.inject(ThemeStore);
-    store.select('graphite');
-    expect((await firstValueFrom(store.option$)).layout).toBe('top');
-    expect(optionOf('sage').layout).toBe('side');
+  it('changes colours only: no theme carries a layout of its own', () => {
+    expect(THEMES.map((theme) => Object.keys(theme).sort())).toEqual(
+      THEMES.map(() => ['id', 'name', 'swatch']),
+    );
   });
 });

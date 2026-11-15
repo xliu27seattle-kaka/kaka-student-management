@@ -55,7 +55,6 @@ const MESSAGES: Record<string, string> = {
                 <span></span><span></span>
               </span>
               <b>{{ option.name }}</b>
-              <span class="hint">{{ option.layout === 'top' ? 'Top navigation' : 'Sidebar' }}</span>
             </button>
           }
         </div>

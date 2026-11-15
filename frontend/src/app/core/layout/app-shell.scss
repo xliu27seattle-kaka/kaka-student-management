@@ -283,7 +283,7 @@
   min-width: 0;
 }
 
-/* ── top navigation: Graphite & Lime, and every theme on narrow windows ── */
+/* ── narrow windows, in every theme: the sidebar becomes a top bar ── */
 @mixin top-layout {
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: auto 1fr;
@@ -357,10 +357,6 @@
     background: var(--bg);
     border: 1px solid var(--line);
   }
-}
-
-.shell.top {
-  @include top-layout;
 }
 
 @media (max-width: 960px) {

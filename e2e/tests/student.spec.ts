@@ -127,9 +127,17 @@ test.describe("themes", () => {
     await signInAs(page, STUDENT_EMAIL);
     await expect(page.locator("html")).toHaveAttribute("data-theme", "midnight");
 
+    // a theme changes colours only: the sidebar stays exactly where it was
     await page.goto("/student/account");
+    await page.getByRole("radio", { name: /Sage Ledger/ }).click();
+    const nav = page.getByRole("navigation", { name: "Main" });
+    const before = await nav.boundingBox();
     await page.getByRole("radio", { name: /Graphite & Lime/ }).click();
-    await expect(page.locator(".shell.top")).toBeVisible();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "graphite");
+    const after = await nav.boundingBox();
+    expect(after?.x).toBe(before?.x);
+    expect(after?.width).toBe(before?.width);
+    expect(Math.abs((after?.y ?? 0) - (before?.y ?? 0))).toBeLessThan(2);
     await page.getByRole("radio", { name: /Sage Ledger/ }).click();
   });
 });

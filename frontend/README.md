@@ -15,7 +15,7 @@ It is built, tested and served through Docker, from the repository root:
 ```
 src/app
 ├── core/       session, theme, toast, confirm and unread stores; HTTP interceptors; route guards;
-│               the app shell (sidebar or top navigation)
+│               the app shell (a sidebar; a top bar in narrow windows)
 ├── shared/
 │   ├── api/    one client per audience (admin, professor, student, common) and the API models
 │   └── ui/     tabs, status badge, empty state, skeleton, schedule grid, transcript sheet,

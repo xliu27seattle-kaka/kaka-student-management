@@ -93,7 +93,7 @@ src/app
 
 - **Routing:** one guarded area per role, each inside the app shell; pages load on first visit; forms are protected by a `canDeactivate` guard that asks through the shared confirmation modal.
 - **State:** `BehaviorSubject` stores read with the `async` pipe. Shared state lives in stores (`AuthStore`, `ThemeStore`, `UnreadStore`, `ConfirmStore`, `ToastStore`, and the page-scoped `EnrollmentStore`); page data is a stream built with `toLoadState()`, which gives every page the same loading, data and error states.
-- **Themes:** four sets of CSS custom properties on `<html data-theme>`. Graphite & Lime also switches the shell to top navigation. The choice is kept in `localStorage`.
+- **Themes:** four sets of CSS custom properties on `<html data-theme>`: colours, fonts and corner radii. The layout is the same in all four. The choice is kept in `localStorage`.
 - **Printing:** the transcript and certificate use a layer of real rotated text for the "Kaka Studio" watermark, because browsers drop background images when printing.
 
 ## Where each brief item lives
