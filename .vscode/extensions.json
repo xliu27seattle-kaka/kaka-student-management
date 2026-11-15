@@ -1,0 +1,9 @@
+{
+  "recommendations": [
+    "mtxr.sqltools",
+    "mtxr.sqltools-driver-pg",
+    "angular.ng-template",
+    "vscjava.vscode-java-pack",
+    "esbenp.prettier-vscode"
+  ]
+}

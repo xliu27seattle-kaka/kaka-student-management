@@ -1,0 +1,18 @@
+{
+  // A ready connection to the demo database for the SQLTools extension.
+  // The values are the non-secret demo defaults from .env.example; change them if your .env does.
+  "sqltools.connections": [
+    {
+      "name": "Kaka SMS (docker compose)",
+      "driver": "PostgreSQL",
+      "server": "localhost",
+      "port": 5432,
+      "database": "kaka_sms",
+      "username": "kaka",
+      "password": "kaka_dev_password",
+      "previewLimit": 50
+    }
+  ],
+  "sqltools.useNodeRuntime": true,
+  "editor.formatOnSave": false
+}

@@ -8,7 +8,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-kaka}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-kaka_dev_password}
     ports:
-      - "${DB_PORT:-5432}:5432"
+      - "127.0.0.1:${DB_PORT:-5432}:5432"
     volumes:
       - db-data:/var/lib/postgresql/data
     healthcheck:
@@ -25,7 +25,7 @@ services:
       MP_SMTP_AUTH_ACCEPT_ANY: "1"
       MP_SMTP_AUTH_ALLOW_INSECURE: "1"
     ports:
-      - "${MAILBOX_UI_PORT:-8025}:8025"
+      - "127.0.0.1:${MAILBOX_UI_PORT:-8025}:8025"
 
   # Sends email. Reachable only from inside this network (no host port): the backend
   # calls it over HTTP with RestTemplate and a shared internal key.
@@ -66,7 +66,7 @@ services:
       EMAIL_MAX_RETRIES: ${EMAIL_MAX_RETRIES:-2}
       APP_DEMO_DATA: ${APP_DEMO_DATA:-true}
     ports:
-      - "${BACKEND_PORT:-8080}:8080"
+      - "127.0.0.1:${BACKEND_PORT:-8080}:8080"
     depends_on:
       db:
         condition: service_healthy
@@ -84,7 +84,7 @@ services:
   frontend:
     build: ./frontend
     ports:
-      - "${FRONTEND_PORT:-4200}:80"
+      - "127.0.0.1:${FRONTEND_PORT:-4200}:80"
     depends_on:
       backend:
         condition: service_healthy
