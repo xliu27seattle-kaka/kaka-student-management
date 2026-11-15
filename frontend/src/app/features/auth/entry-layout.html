@@ -1,51 +1,69 @@
-@let current = (index$ | async) ?? 0;
+@let slide = (slide$ | async)!;
 
-<main class="entry" [attr.data-time]="period">
+<main class="entry" [attr.data-time]="period" [style.--rotate-ms]="rotateMs + 'ms'">
+  <!-- Every photograph stays in the page: the one in front fades in over the one behind it. -->
   <div class="bg" aria-hidden="true">
     @for (scene of scenes; track scene.src; let i = $index) {
-      @if (shouldLoad(i, current)) {
-        <img
-          [src]="scene.src"
-          alt=""
-          decoding="async"
-          [style.object-position]="scene.position"
-          [class.on]="i === current"
-          [class.alt]="i % 2 === 1"
-        />
-      }
+      <img
+        [src]="scene.src"
+        alt=""
+        decoding="async"
+        [attr.fetchpriority]="i === 0 ? 'high' : 'low'"
+        [style.object-position]="scene.position"
+        [class.on]="i === slide.current"
+        [class.prev]="i === slide.previous"
+        [class.alt]="i % 2 === 1"
+      />
     }
   </div>
   <div class="tint"></div>
   <div class="scrim"></div>
   <div class="grain"></div>
 
-  <header class="brand">
-    <span class="brand-mark">K</span>
-    <div>
-      <b>Kaka</b>
-      <small>Student Management</small>
+  <header class="top">
+    <div class="chip-on-photo brand">
+      <span class="brand-mark">K</span>
+      <span>
+        <b>Kaka</b>
+        <small>Student Management</small>
+      </span>
+    </div>
+
+    <!-- All captions share one spot and cross-fade; only the current one is read out. -->
+    <div class="caption">
+      @for (scene of scenes; track scene.src; let i = $index) {
+        <p
+          class="chip-on-photo caption-item"
+          [class.on]="i === slide.current"
+          [attr.aria-hidden]="i !== slide.current"
+          [attr.data-testid]="i === slide.current ? 'photo-caption' : null"
+        >
+          <i class="ph ph-map-pin" aria-hidden="true"></i>
+          <span>{{ scene.title }}</span>
+          <span class="credit">{{ scene.credit }}</span>
+        </p>
+      }
     </div>
   </header>
 
-  <section class="hello">
-    <h1>{{ greeting }}</h1>
-    <p>{{ subtitle() }}</p>
-    <div class="cap">
-      <span class="cap-text">{{ scenes[current].title }} · {{ scenes[current].credit }}</span>
-      <div class="dots" role="group" aria-label="Photographs">
-        @for (scene of scenes; track scene.src; let i = $index) {
-          <button
-            type="button"
-            [class.on]="i === current"
-            [attr.aria-label]="'Show photograph: ' + scene.title"
-            [attr.aria-pressed]="i === current"
-            (click)="show(i)"
-          >
-            <i></i>
-          </button>
+  <section class="welcome" aria-labelledby="entry-greeting">
+    <p class="today">{{ today | date: 'EEEE, d MMMM y' }}</p>
+    <h1 id="entry-greeting">{{ greeting }}</h1>
+    <p class="lead">{{ subtitle() }}</p>
+
+    <section class="roles" aria-label="What you can do here">
+      <ul>
+        @for (role of roles; track role.title) {
+          <li>
+            <span class="role-icon"><i class="ph" [class]="role.icon" aria-hidden="true"></i></span>
+            <span>
+              <b>{{ role.title }}</b>
+              <span class="role-text">{{ role.text }}</span>
+            </span>
+          </li>
         }
-      </div>
-    </div>
+      </ul>
+    </section>
   </section>
 
   <section class="card">
@@ -53,7 +71,21 @@
   </section>
 
   <footer class="foot">
-    <span class="studio-mark">Kaka Studio</span>
-    <span>Public-domain and CC0 photographs, each credited beside its title</span>
+    <!-- A fixed-size control in its own corner: nothing next to it can push it around. -->
+    <div class="chip-on-photo bars" role="group" aria-label="Photographs">
+      @for (scene of scenes; track scene.src; let i = $index) {
+        <button
+          type="button"
+          [class.on]="i === slide.current"
+          [class.autoplay]="autoplay"
+          [attr.aria-label]="'Show photograph: ' + scene.title"
+          [attr.aria-pressed]="i === slide.current"
+          (click)="show(i)"
+        >
+          <i></i>
+        </button>
+      }
+    </div>
+    <span class="chip-on-photo studio-mark">Kaka Studio</span>
   </footer>
 </main>

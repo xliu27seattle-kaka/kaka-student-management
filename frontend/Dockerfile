@@ -6,8 +6,10 @@ COPY package.json package-lock.json ./
 RUN --mount=type=cache,target=/root/.npm npm ci
 COPY . .
 
-# ---- unit tests (scripts/test.sh frontend) ----
+# ---- formatting, lint and unit tests (scripts/test.sh frontend), the same checks as CI ----
 FROM base AS test
+RUN npx prettier --check "src/**/*.{ts,html,scss}"
+RUN npx eslint "src/**/*.ts" "src/**/*.html"
 RUN npx ng test --watch=false
 
 # ---- production build ----

@@ -1,7 +1,11 @@
+/* finesse · register=brand · A=sage-paper-on-photo · B=800/500 Manrope · C=wallpaper+widgets
+ * D=css-crossfade+drift · E=desktop-wallpaper · SOUL=6 SPECTACLE=4 DENSITY=4 */
 :host {
-  --on-photo: #f6f3ec;
-  --on-photo-2: rgba(246, 243, 236, 0.82);
-  --pad: clamp(16px, 4vw, 56px);
+  /* Paper panels that sit on the photograph, like widgets on a desktop wallpaper. */
+  --glass: rgba(251, 250, 246, 0.94);
+  --glass-line: rgba(255, 255, 255, 0.55);
+  --glass-shadow: 0 24px 60px -28px rgba(20, 40, 30, 0.45);
+  --pad: clamp(16px, 3.4vw, 48px);
   display: block;
 }
 
@@ -14,14 +18,15 @@
   grid-template-columns: minmax(0, 1fr) minmax(0, 400px);
   grid-template-rows: auto minmax(0, 1fr) auto;
   grid-template-areas:
-    'brand card'
-    'hello card'
+    'top top'
+    'welcome card'
     'foot foot';
-  column-gap: clamp(24px, 5vw, 72px);
+  column-gap: clamp(24px, 4vw, 64px);
   row-gap: 24px;
   padding: var(--pad);
-  color: var(--on-photo);
-  background: #0e1512;
+  color: var(--ink-1);
+  /* Seen only for the moment before the first photograph arrives. */
+  background: #aab5a8;
 }
 
 /* ── the photograph and what lies over it ── */
@@ -38,6 +43,11 @@
   z-index: -4;
   overflow: hidden;
 
+  /*
+   * The slow zoom runs on every photograph all the time and is only paused while it is hidden,
+   * so it never restarts (a restart is a visible jump). The new photograph fades in on top while
+   * the one behind stays fully opaque, so the picture never dims halfway through the change.
+   */
   img {
     position: absolute;
     inset: 0;
@@ -45,16 +55,24 @@
     height: 100%;
     object-fit: cover;
     opacity: 0;
-    transform: scale(1.05);
-    transition: opacity 2s ease-in-out;
+    z-index: 0;
+    transition: opacity 1.6s ease-in-out;
+    animation: drift 24s ease-in-out infinite alternate paused;
+
+    &.alt {
+      animation-name: drift-back;
+    }
+
+    &.prev {
+      opacity: 1;
+      z-index: 1;
+      animation-play-state: running;
+    }
 
     &.on {
       opacity: 1;
-      animation: drift 26s linear forwards;
-    }
-
-    &.alt.on {
-      animation-name: drift-back;
+      z-index: 2;
+      animation-play-state: running;
     }
   }
 }
@@ -77,7 +95,7 @@
   }
 }
 
-/* A colour wash for the visitor's time of day. */
+/* A light colour wash for the visitor's time of day; it never darkens the photograph much. */
 .tint {
   z-index: -3;
   mix-blend-mode: soft-light;
@@ -86,251 +104,414 @@
 
 [data-time='dawn'] .tint {
   background: #ffb27a;
-  opacity: 0.38;
+  opacity: 0.3;
 }
 
 [data-time='dusk'] .tint {
-  background: #ff7a3d;
-  opacity: 0.5;
+  background: #ff9a5c;
+  opacity: 0.32;
 }
 
-[data-time='night'] {
-  .tint {
-    background: #16306e;
-    opacity: 0.62;
-    mix-blend-mode: multiply;
-  }
-
-  .bg img {
-    filter: brightness(0.82) saturate(0.85);
-  }
+[data-time='night'] .tint {
+  background: #3a5aa8;
+  opacity: 0.28;
 }
 
-/* Darkens only where the text sits (left and bottom); the photograph stays open elsewhere. */
+/* Only a breath of shade at the top and bottom edges: all text sits on paper panels. */
 .scrim {
   z-index: -2;
-  background:
-    linear-gradient(
-      180deg,
-      rgba(10, 16, 13, 0.5) 0%,
-      rgba(10, 16, 13, 0.1) 26%,
-      rgba(10, 16, 13, 0.28) 56%,
-      rgba(10, 16, 13, 0.82) 100%
-    ),
-    linear-gradient(
-      100deg,
-      rgba(10, 16, 13, 0.62) 0%,
-      rgba(10, 16, 13, 0.3) 38%,
-      rgba(10, 16, 13, 0) 66%
-    );
+  background: linear-gradient(
+    180deg,
+    rgba(14, 24, 19, 0.2) 0%,
+    rgba(14, 24, 19, 0) 18%,
+    rgba(14, 24, 19, 0) 78%,
+    rgba(14, 24, 19, 0.18) 100%
+  );
 }
 
 .grain {
   z-index: -1;
-  opacity: 0.06;
+  opacity: 0.04;
   mix-blend-mode: overlay;
   background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* ── content ── */
-.brand {
-  grid-area: brand;
-  align-self: start;
+/*
+ * ── panels on the photograph ──
+ * No backdrop blur on purpose: the photograph behind keeps moving, so a blur would be
+ * recomputed on every frame and keep the visitor's CPU or GPU busy the whole time.
+ */
+.chip-on-photo,
+.welcome,
+.card {
+  background: var(--glass);
+  border: 1px solid var(--glass-line);
+  box-shadow: var(--glass-shadow);
+}
+
+.chip-on-photo {
+  border-radius: 999px;
+  color: var(--ink-2);
+  font: 500 12px/16px var(--font);
+}
+
+/* ── top row: brand on the left, the photograph's caption on the right ── */
+.top {
+  grid-area: top;
   display: flex;
-  align-items: center;
-  gap: 12px;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  min-width: 0;
   animation: rise 0.9s var(--ease) both;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 16px 6px 6px;
+  flex: none;
 
   b {
     display: block;
-    font: 700 14px/20px var(--font);
+    font: 700 14px/18px var(--font);
+    color: var(--ink-1);
   }
 
   small {
     display: block;
     font: 500 12px/16px var(--font);
-    color: var(--on-photo-2);
+    color: var(--ink-2);
   }
 }
 
 .brand-mark {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: var(--paper);
-  color: var(--accent);
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--paper);
   display: grid;
   place-items: center;
-  font: 800 16px/1 var(--font);
-  flex: none;
+  font: 800 15px/1 var(--font);
 }
 
-.hello {
-  grid-area: hello;
-  align-self: end;
+/* All captions sit in the same grid cell; only the current one is opaque. */
+.caption {
+  display: grid;
+  justify-items: end;
   min-width: 0;
+}
+
+.caption-item {
+  grid-area: 1 / 1;
+  margin: 0;
+  max-width: 100%;
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  column-gap: 8px;
+  row-gap: 2px;
+  padding: 10px 16px;
+  opacity: 0;
+  transition: opacity 0.8s ease-in-out;
+
+  &.on {
+    opacity: 1;
+  }
+
+  .ph {
+    color: var(--accent);
+    font-size: 16px;
+  }
+
+  span:not(.credit) {
+    color: var(--ink-1);
+    font-weight: 600;
+  }
+
+  .credit {
+    color: var(--ink-2);
+  }
+
+  .credit::before {
+    content: '·';
+    margin-right: 8px;
+  }
+}
+
+/* ── the welcome panel ── */
+.welcome {
+  grid-area: welcome;
+  align-self: end;
+  width: 100%;
+  max-width: 540px;
+  min-width: 0;
+  border-radius: var(--radius-lg);
+  padding: clamp(22px, 2.6vw, 36px);
+  animation: rise 1s var(--ease) both 0.12s;
 
   h1 {
-    font: 800 clamp(44px, 7.4vw, 112px) / 0.92 var(--font);
-    letter-spacing: -0.05em;
+    margin-top: 6px;
+    font: 800 clamp(36px, 4.2vw, 60px) / 1 var(--font);
+    letter-spacing: -0.04em;
+    color: var(--ink-1);
     overflow-wrap: anywhere;
     text-wrap: balance;
-    animation: rise 1s var(--ease) both 0.1s;
-  }
-
-  p {
-    margin-top: clamp(12px, 1.6vw, 20px);
-    max-width: 460px;
-    font: 500 clamp(16px, 1.4vw, 18px) / 1.55 var(--font);
-    color: var(--on-photo-2);
-    text-wrap: pretty;
-    animation: rise 1s var(--ease) both 0.22s;
   }
 }
 
-.cap {
-  margin-top: clamp(20px, 3vw, 36px);
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-  animation: rise 1s var(--ease) both 0.34s;
-}
-
-.cap-text {
+.today {
   font: 500 12px/16px var(--font-mono);
-  color: var(--on-photo-2);
+  color: var(--accent);
+  letter-spacing: 0.02em;
 }
 
-.dots {
-  display: flex;
-  gap: 6px;
+.lead {
+  margin-top: 12px;
+  max-width: 440px;
+  font: 500 15px/1.55 var(--font);
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
 
-  button {
-    width: 28px;
-    height: 28px;
+.roles {
+  margin-top: clamp(18px, 2.4vw, 28px);
+  border-top: 1px solid var(--line);
+
+  ul {
+    margin: 0;
     padding: 0;
-    border: 0;
-    background: none;
-    cursor: pointer;
+    list-style: none;
+  }
+
+  li {
     display: grid;
-    place-items: center;
-    border-radius: 6px;
+    grid-template-columns: 40px minmax(0, 1fr);
+    gap: 14px;
+    align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
 
-    &:focus-visible {
-      outline: 2px solid var(--on-photo);
-      outline-offset: 2px;
+    &:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
     }
+  }
 
-    i {
-      display: block;
-      width: 18px;
-      height: 3px;
-      border-radius: 2px;
-      background: rgba(246, 243, 236, 0.38);
-      transform-origin: left;
-      transition:
-        background-color 0.3s ease-in-out,
-        transform 0.5s var(--ease);
-    }
-
-    &.on i {
-      background: var(--on-photo);
-      transform: scaleX(1.4);
-    }
+  b {
+    display: block;
+    font: 700 14px/20px var(--font);
+    color: var(--ink-1);
   }
 }
 
+.role-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 20px;
+}
+
+.role-text {
+  display: block;
+  font: 500 13px/19px var(--font);
+  color: var(--ink-2);
+}
+
+/* ── the form card ── */
 .card {
   grid-area: card;
-  align-self: center;
+  align-self: end;
   width: 100%;
-  background: var(--paper);
   color: var(--ink-1);
   border-radius: var(--radius-lg);
   padding: clamp(20px, 2.4vw, 32px);
-  box-shadow:
-    0 50px 100px -50px rgba(4, 10, 7, 0.9),
-    0 0 0 1px rgba(255, 255, 255, 0.08);
-  animation: rise 1s var(--ease) both 0.3s;
+  /* Solid paper: the form's grey hints keep their contrast whatever photograph is behind. */
+  background: var(--paper);
+  animation: rise 1s var(--ease) both 0.24s;
 }
 
+/* ── bottom row: photograph switch on the left, studio mark in the corner ── */
 .foot {
   grid-area: foot;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 16px;
-  flex-wrap: wrap;
-  font: 500 12px/16px var(--font);
-  color: var(--on-photo-2);
+}
 
-  .studio-mark {
-    color: var(--on-photo);
+.bars {
+  display: inline-flex;
+  padding: 4px 8px;
+  flex: none;
+
+  button {
+    width: 36px;
+    height: 32px;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+
+    &:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: -2px;
+    }
+
+    /* The track; its ::after fills up while the photograph is in front. */
+    i {
+      position: relative;
+      display: block;
+      width: 24px;
+      height: 4px;
+      border-radius: 2px;
+      overflow: hidden;
+      background: rgba(20, 32, 26, 0.18);
+      transition: background-color 0.3s ease-in-out;
+
+      &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background: var(--accent);
+        transform: scaleX(0);
+        transform-origin: left;
+      }
+    }
+
+    &:hover i {
+      background: rgba(20, 32, 26, 0.3);
+    }
+
+    &.on i::after {
+      transform: scaleX(1);
+    }
+
+    &.on.autoplay i::after {
+      animation: fill var(--rotate-ms, 12s) linear both;
+    }
   }
 }
 
-/* Narrower than a laptop: one column, with the photograph still visible above the card. */
-@media (max-width: 960px) {
-  .entry {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto minmax(28vh, 1fr) auto auto;
-    grid-template-areas:
-      'brand'
-      'hello'
-      'card'
-      'foot';
+@keyframes fill {
+  from {
+    transform: scaleX(0);
   }
-
-  .card {
-    justify-self: center;
-    max-width: 460px;
-  }
-
-  .scrim {
-    background: linear-gradient(
-      180deg,
-      rgba(10, 16, 13, 0.5) 0%,
-      rgba(10, 16, 13, 0.16) 22%,
-      rgba(10, 16, 13, 0.62) 58%,
-      rgba(10, 16, 13, 0.88) 100%
-    );
+  to {
+    transform: scaleX(1);
   }
 }
 
-@media (max-width: 560px) {
-  .hello p {
+.studio-mark {
+  padding: 8px 14px;
+  color: var(--ink-1);
+}
+
+/* A short window: keep the welcome panel compact so the card stays in view. */
+@media (max-height: 760px) and (min-width: 961px) {
+  .role-text,
+  .lead {
     display: none;
   }
 
-  .cap {
-    margin-top: 12px;
+  .roles li {
+    padding: 8px 0;
+  }
+
+  .welcome h1 {
+    font-size: clamp(32px, 6vh, 48px);
+  }
+}
+
+/* Narrower than a laptop: one column; the form comes first, the welcome panel after it. */
+@media (max-width: 960px) {
+  .entry {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto auto auto;
+    grid-template-areas:
+      'top'
+      'card'
+      'welcome'
+      'foot';
+    justify-items: center;
+  }
+
+  .top {
+    justify-self: stretch;
+  }
+
+  .card {
+    max-width: 480px;
+    /* Leave a strip of the photograph open above the form. */
+    margin-top: clamp(16px, 8vh, 96px);
+  }
+
+  .welcome {
+    max-width: 480px;
+  }
+
+  .foot {
+    justify-self: stretch;
+  }
+}
+
+@media (max-width: 640px) {
+  .top {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .brand {
+    align-self: flex-start;
+  }
+
+  .caption {
+    justify-items: start;
+  }
+
+  /* Place above credit, so a wrapped line never starts with the separator dot. */
+  .caption-item {
+    flex-direction: column;
+    align-items: flex-start;
+    border-radius: 16px;
+    padding-left: 40px;
+    position: relative;
+
+    .ph {
+      position: absolute;
+      left: 16px;
+      top: 10px;
+    }
+
+    .credit::before {
+      content: none;
+    }
   }
 
   .card {
     border-radius: 20px;
+    margin-top: 8px;
   }
 
-  .foot {
-    justify-content: center;
-    text-align: center;
-  }
-}
-
-/* A short window: shrink the greeting instead of pushing the card off screen. */
-@media (max-height: 720px) and (min-width: 961px) {
-  .hello h1 {
-    font-size: clamp(40px, 9vh, 72px);
-  }
-
-  .hello p {
-    display: none;
+  .welcome {
+    border-radius: 20px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .bg img.on {
+  .bg img {
     animation: none;
     transform: scale(1.05);
+    transition-duration: 0.6s;
   }
 }
