@@ -1,0 +1,180 @@
+/*
+ * The four themes. Each is a set of CSS custom properties; the app shell puts the chosen one on
+ * <html data-theme="...">. Pages only ever use the variables, never a colour of their own.
+ * Sage Ledger is also the default for pages outside the shell (sign in, register).
+ */
+:root,
+[data-theme='sage'] {
+  color-scheme: light;
+  --page: #eef0ec;
+  --bg: #ffffff;
+  --paper: #fbfaf6;
+  --panel: #f1f3ee;
+  --panel-hover: #e7ebe4;
+  --line: rgba(20, 32, 26, 0.1);
+  --line-strong: rgba(20, 32, 26, 0.2);
+  --ink-1: #14201a;
+  --ink-2: #3c4a43;
+  --ink-3: #66766d;
+  --accent: #2f6b4f;
+  --accent-strong: #27593f;
+  --accent-soft: rgba(47, 107, 79, 0.12);
+  --on-accent: #ffffff;
+  --gold: #c08a3e;
+  --danger: #b3261e;
+  --danger-soft: rgba(179, 38, 30, 0.08);
+  --warn: #9a6512;
+  --warn-soft: rgba(183, 122, 22, 0.12);
+  --ok: #2c7a8c;
+  --ok-soft: rgba(44, 122, 140, 0.12);
+  --shadow: 0 1px 3px rgba(20, 40, 30, 0.06);
+  --shadow-lg: 0 40px 90px -50px rgba(20, 40, 30, 0.35);
+
+  --rail-bg: #f6f7f3;
+  --rail-ink: #3c4a43;
+  --rail-strong: #14201a;
+  --rail-muted: #66766d;
+  --rail-hover: rgba(20, 32, 26, 0.05);
+  --rail-line: rgba(20, 32, 26, 0.08);
+  --nav-on-bg: #ffffff;
+  --nav-on-ink: #14201a;
+  --nav-on-icon: var(--accent);
+  --nav-on-shadow: 0 1px 3px rgba(20, 40, 30, 0.08);
+
+  --radius: 12px;
+  --radius-lg: 20px;
+  --row-h: 52px;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --font: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --font-num: var(--font);
+}
+
+[data-theme='midnight'] {
+  color-scheme: dark;
+  --page: #08090f;
+  --bg: #12141c;
+  --paper: #161923;
+  --panel: #1a1d27;
+  --panel-hover: #222634;
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(255, 255, 255, 0.18);
+  --ink-1: #eceef5;
+  --ink-2: #a8adbd;
+  --ink-3: #8b91a6;
+  --accent: #e8a33d;
+  --accent-strong: #f0b251;
+  --accent-soft: rgba(232, 163, 61, 0.14);
+  --on-accent: #141008;
+  --gold: #7b8cff;
+  --danger: #ff6b63;
+  --danger-soft: rgba(255, 95, 86, 0.12);
+  --warn: #e8a33d;
+  --warn-soft: rgba(232, 163, 61, 0.14);
+  --ok: #3fcb86;
+  --ok-soft: rgba(63, 203, 134, 0.12);
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 40px 90px -50px rgba(0, 0, 0, 0.75);
+
+  --rail-bg: #0c0e15;
+  --rail-ink: #a8adbd;
+  --rail-strong: #eceef5;
+  --rail-muted: #8b91a6;
+  --rail-hover: rgba(255, 255, 255, 0.05);
+  --rail-line: rgba(255, 255, 255, 0.06);
+  --nav-on-bg: #1a1d27;
+  --nav-on-ink: #eceef5;
+  --nav-on-icon: var(--accent);
+  --nav-on-shadow: none;
+
+  --radius: 10px;
+  --radius-lg: 16px;
+  --font: 'Geist', system-ui, sans-serif;
+  --font-num: 'Geist Mono', ui-monospace, monospace;
+}
+
+[data-theme='graphite'] {
+  color-scheme: dark;
+  --page: #131313;
+  --bg: #1f1f1f;
+  --paper: #232323;
+  --panel: #272727;
+  --panel-hover: #303030;
+  --line: rgba(255, 255, 255, 0.09);
+  --line-strong: rgba(255, 255, 255, 0.2);
+  --ink-1: #f1f3ea;
+  --ink-2: #b9bdae;
+  --ink-3: #959a8b;
+  --accent: #b6e018;
+  --accent-strong: #c6ec3a;
+  --accent-soft: rgba(182, 224, 24, 0.13);
+  --on-accent: #12140d;
+  --gold: #5fd3b2;
+  --danger: #ff7b6b;
+  --danger-soft: rgba(255, 107, 90, 0.12);
+  --warn: #e8a33d;
+  --warn-soft: rgba(232, 163, 61, 0.14);
+  --ok: #6fd48a;
+  --ok-soft: rgba(111, 212, 138, 0.12);
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 40px 90px -50px rgba(0, 0, 0, 0.7);
+
+  --rail-bg: #181818;
+  --rail-ink: #b9bdae;
+  --rail-strong: #f1f3ea;
+  --rail-muted: #959a8b;
+  --rail-hover: rgba(255, 255, 255, 0.05);
+  --rail-line: rgba(255, 255, 255, 0.07);
+  --nav-on-bg: var(--accent-soft);
+  --nav-on-ink: var(--accent);
+  --nav-on-icon: var(--accent);
+  --nav-on-shadow: none;
+
+  --radius: 8px;
+  --radius-lg: 10px;
+  --row-h: 44px;
+  --font: 'Geist', system-ui, sans-serif;
+  --font-num: 'Geist Mono', ui-monospace, monospace;
+}
+
+[data-theme='cobalt'] {
+  color-scheme: light;
+  --page: #edf0f6;
+  --bg: #ffffff;
+  --paper: #fafbfd;
+  --panel: #f4f6fa;
+  --panel-hover: #e9edf5;
+  --line: rgba(20, 32, 56, 0.1);
+  --line-strong: rgba(20, 32, 56, 0.2);
+  --ink-1: #121a2b;
+  --ink-2: #3a465c;
+  --ink-3: #5f6c83;
+  --accent: #2d5bd8;
+  --accent-strong: #2449b3;
+  --accent-soft: rgba(45, 91, 216, 0.1);
+  --on-accent: #ffffff;
+  --gold: #d9892b;
+  --danger: #b8382f;
+  --danger-soft: rgba(192, 69, 60, 0.09);
+  --warn: #9a6512;
+  --warn-soft: rgba(183, 122, 22, 0.12);
+  --ok: #2f7a55;
+  --ok-soft: rgba(47, 122, 85, 0.1);
+  --shadow: 0 1px 3px rgba(20, 34, 64, 0.06);
+  --shadow-lg: 0 40px 90px -50px rgba(20, 34, 64, 0.34);
+
+  --rail-bg: #111a2e;
+  --rail-ink: #a9b5cb;
+  --rail-strong: #ffffff;
+  --rail-muted: #8693ad;
+  --rail-hover: rgba(255, 255, 255, 0.06);
+  --rail-line: transparent;
+  --nav-on-bg: rgba(255, 255, 255, 0.1);
+  --nav-on-ink: #ffffff;
+  --nav-on-icon: #f0b251;
+  --nav-on-shadow: none;
+
+  --radius: 12px;
+  --radius-lg: 16px;
+  --font: 'Poppins', system-ui, sans-serif;
+}

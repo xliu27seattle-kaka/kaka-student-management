@@ -1,0 +1,149 @@
+.progress {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.ring {
+  --p: 0;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  width: 132px;
+  height: 132px;
+  border-radius: 50%;
+  background:
+    radial-gradient(closest-side, var(--bg) 78%, transparent 79% 100%),
+    conic-gradient(var(--accent) calc(min(var(--p), 1) * 100%), var(--panel) 0);
+  animation: rise 0.6s var(--ease);
+
+  b {
+    font-size: 32px;
+    line-height: 36px;
+    color: var(--ink-1);
+  }
+
+  small {
+    color: var(--ink-3);
+  }
+}
+
+.reasons {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-width: 200px;
+
+  li {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    color: var(--ink-1);
+    font-weight: 600;
+
+    .ph {
+      color: var(--warn);
+      font-size: 18px;
+    }
+
+    &.ready .ph {
+      color: var(--ok);
+    }
+  }
+}
+
+.certificate {
+  position: relative;
+  overflow: hidden;
+  padding: 16px;
+  border-radius: var(--radius-lg);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-lg), var(--shadow);
+}
+
+.frame {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 48px 32px;
+  border: 2px solid var(--gold);
+  border-radius: 12px;
+  text-align: center;
+
+  h2 {
+    font: 800 40px/48px var(--font);
+    letter-spacing: -0.02em;
+    color: var(--ink-1);
+    margin: 8px 0;
+  }
+
+  .pre {
+    color: var(--ink-3);
+  }
+
+  .credits b {
+    font-size: 28px;
+    color: var(--accent);
+  }
+
+  .school {
+    font: 700 20px/28px var(--font);
+    color: var(--ink-1);
+  }
+
+  .studio-mark {
+    color: var(--gold);
+    margin-bottom: 16px;
+  }
+
+  .number {
+    margin-top: 16px;
+    color: var(--ink-3);
+    font-family: var(--font-num);
+  }
+}
+
+.signs {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 40px;
+  margin-top: 32px;
+
+  div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .line {
+    width: 160px;
+    border-top: 1px solid var(--ink-3);
+  }
+
+  small {
+    color: var(--ink-3);
+  }
+
+  .seal-mark .ph {
+    font-size: 56px;
+    color: var(--gold);
+  }
+}
+
+@media print {
+  .certificate {
+    box-shadow: none;
+    border: 0;
+  }
+}

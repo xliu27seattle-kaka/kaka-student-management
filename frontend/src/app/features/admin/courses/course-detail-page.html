@@ -1,0 +1,168 @@
+@let tab = (tab$ | async)!;
+<div class="page">
+  @if (course$ | async; as state) {
+    @if (state.loading && !state.data) {
+      <div class="card flush"><app-skeleton-rows /></div>
+    } @else if (state.error) {
+      <div class="card">
+        <app-empty-state
+          kind="error"
+          icon="ph-warning-circle"
+          title="This course could not load"
+          [message]="state.error.message"
+        />
+      </div>
+    } @else if (state.data; as c) {
+      <header class="page-head rise">
+        <div>
+          <a class="back-link" routerLink="/admin/courses"
+            ><i class="ph ph-arrow-left" aria-hidden="true"></i>Courses</a
+          >
+          <span class="eyebrow">{{ c.department }} · {{ c.credits }} credits</span>
+          <h1>{{ c.code }} · {{ c.title }}</h1>
+          <div class="actions" style="margin-top: 10px">
+            <span class="badge" [class.ok]="c.active">{{ c.active ? 'Active' : 'Retired' }}</span>
+          </div>
+        </div>
+        <div class="actions">
+          <button type="button" class="btn btn-quiet" (click)="remove(c)">
+            <i class="ph ph-trash" aria-hidden="true"></i>Delete
+          </button>
+          <a class="btn btn-primary" [routerLink]="['/admin/courses', c.id, 'edit']"
+            ><i class="ph ph-pencil-simple" aria-hidden="true"></i>Edit</a
+          >
+        </div>
+      </header>
+    }
+  }
+
+  <app-tabs [tabs]="tabs" [active]="tab" (activeChange)="tab$.next($event)" />
+
+  @if (tab === 'sections') {
+    @let sections = (sections$ | async)!;
+    <section
+      class="card flush rise"
+      role="tabpanel"
+      aria-labelledby="tab-sections"
+      id="tab-sections-panel"
+    >
+      @if (sections.loading) {
+        <app-skeleton-rows [count]="3" />
+      } @else if (sections.error) {
+        <app-empty-state
+          kind="error"
+          icon="ph-warning-circle"
+          title="Sections could not load"
+          [message]="sections.error.message"
+        />
+      } @else {
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Section</th>
+                <th>Semester</th>
+                <th>Professor</th>
+                <th>Schedule</th>
+                <th class="right">Seats</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (s of sections.data; track s.id) {
+                <tr>
+                  <td>
+                    <a class="row-link" [routerLink]="['/admin/sections', s.id]">{{ s.code }}</a>
+                  </td>
+                  <td>{{ s.semesterName }} <app-status-badge [status]="s.semesterStatus" /></td>
+                  <td>{{ s.professorName }}</td>
+                  <td class="muted">{{ summary(s) }}</td>
+                  <td class="right num">{{ s.enrolledCount }}/{{ s.capacity }}</td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="5">
+                    <app-empty-state
+                      icon="ph-calendar-blank"
+                      title="Not offered yet"
+                      message="Add a section from a draft semester."
+                    />
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+  } @else if (course$ | async; as state) {
+    @if (state.data; as c) {
+      @if (tab === 'overview') {
+        <section
+          class="card rise"
+          role="tabpanel"
+          aria-labelledby="tab-overview"
+          id="tab-overview-panel"
+        >
+          <dl class="facts">
+            <div>
+              <dt>Code</dt>
+              <dd>{{ c.code }}</dd>
+            </div>
+            <div>
+              <dt>Department</dt>
+              <dd>{{ c.department }}</dd>
+            </div>
+            <div>
+              <dt>Credits</dt>
+              <dd class="num">{{ c.credits }}</dd>
+            </div>
+            <div>
+              <dt>Sections so far</dt>
+              <dd class="num">{{ c.sectionCount }}</dd>
+            </div>
+          </dl>
+          <h2 style="margin-top: 24px">Description</h2>
+          <p class="description">{{ c.description || 'No description yet.' }}</p>
+        </section>
+      } @else {
+        <section
+          class="card rise chain"
+          role="tabpanel"
+          aria-labelledby="tab-prerequisites"
+          id="tab-prerequisites-panel"
+        >
+          <div class="column">
+            <span class="eyebrow">Needs first</span>
+            @for (p of c.prerequisites; track p.id) {
+              <a class="node" [routerLink]="['/admin/courses', p.id]"
+                ><b>{{ p.code }}</b
+                ><span>{{ p.title }}</span></a
+              >
+            } @empty {
+              <p class="hint">No prerequisites: anyone can take it.</p>
+            }
+          </div>
+          <i class="ph ph-arrow-right arrow" aria-hidden="true"></i>
+          <div class="column">
+            <span class="eyebrow">This course</span>
+            <div class="node current">
+              <b>{{ c.code }}</b><span>{{ c.title }}</span>
+            </div>
+          </div>
+          <i class="ph ph-arrow-right arrow" aria-hidden="true"></i>
+          <div class="column">
+            <span class="eyebrow">Opens up</span>
+            @for (r of c.requiredBy; track r.id) {
+              <a class="node" [routerLink]="['/admin/courses', r.id]"
+                ><b>{{ r.code }}</b
+                ><span>{{ r.title }}</span></a
+              >
+            } @empty {
+              <p class="hint">No course requires it.</p>
+            }
+          </div>
+        </section>
+      }
+    }
+  }
+</div>

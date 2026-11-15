@@ -50,9 +50,9 @@ test.describe("signing in", () => {
 
     await expect(page).toHaveURL(/\/admin$/);
     await expect(
-      page.getByRole("heading", { name: "Welcome, Kaka." }),
+      page.getByRole("heading", { name: "Good to see you, Kaka." }),
     ).toBeVisible();
-    await expect(page.getByTestId("role")).toHaveText("ADMIN");
+    await expect(page.getByRole("navigation", { name: "Main" })).toContainText("Semesters");
   });
 
   test("a student who opens the administration area is sent to their own", async ({
@@ -64,7 +64,7 @@ test.describe("signing in", () => {
     await page.goto("/admin");
 
     await expect(page).toHaveURL(/\/student$/);
-    await expect(page.getByTestId("role")).toHaveText("STUDENT");
+    await expect(page.getByRole("navigation", { name: "Main" })).toContainText("Transcript");
   });
 
   test("the session survives a reload, and signing out locks the area again", async ({
@@ -74,7 +74,7 @@ test.describe("signing in", () => {
     await expect(page).toHaveURL(/\/student$/);
 
     await page.reload();
-    await expect(page.getByTestId("role")).toHaveText("STUDENT");
+    await expect(page.getByRole("navigation", { name: "Main" })).toContainText("Transcript");
 
     await page.getByRole("button", { name: "Sign out" }).click();
     await expect(page).toHaveURL(/\/login$/);

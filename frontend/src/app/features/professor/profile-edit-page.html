@@ -1,0 +1,146 @@
+<div class="page" style="max-width: 920px">
+  <header class="page-head rise">
+    <div>
+      <a class="back-link" routerLink="/professor/profile"
+        ><i class="ph ph-arrow-left" aria-hidden="true"></i>My profile</a
+      >
+      <h1>Edit profile</h1>
+      <p>Students read this before choosing a section.</p>
+    </div>
+  </header>
+  <form class="card rise" style="--i: 1" [formGroup]="form" (ngSubmit)="save()" novalidate>
+    @if (error$ | async; as error) {
+      <div class="alert alert-error" role="alert" style="margin-bottom: 16px">{{ error }}</div>
+    }
+    <div class="form-grid">
+      <div class="field span-2">
+        <label for="p-title">Title</label>
+        <input
+          class="control"
+          id="p-title"
+          formControlName="title"
+          placeholder="Associate Professor of Computer Science"
+        />
+      </div>
+      <div class="field span-2">
+        <label for="p-bio">Introduction</label>
+        <textarea
+          class="control"
+          id="p-bio"
+          rows="6"
+          formControlName="bio"
+          maxlength="4000"
+        ></textarea>
+      </div>
+    </div>
+
+    <h2 class="sub">Areas of expertise</h2>
+    <div class="chips" formArrayName="expertise">
+      @for (control of form.controls.expertise.controls; track control; let i = $index) {
+        <span class="pill">
+          {{ control.value }}
+          <button
+            type="button"
+            [attr.aria-label]="'Remove ' + control.value"
+            (click)="removeAt(form.controls.expertise, i)"
+          >
+            <i class="ph ph-x" aria-hidden="true"></i>
+          </button>
+        </span>
+      }
+    </div>
+    <div class="add-row">
+      <input
+        class="control"
+        [formControl]="newExpertise"
+        placeholder="Add an area, for example Databases"
+        aria-label="New area of expertise"
+        (keydown.enter)="$event.preventDefault(); addExpertise()"
+      />
+      <button type="button" class="btn btn-ghost" (click)="addExpertise()">Add</button>
+    </div>
+
+    <div class="card-head sub-head">
+      <h2>Experience</h2>
+      <button type="button" class="btn btn-sm btn-ghost" (click)="addExperience()">
+        <i class="ph ph-plus" aria-hidden="true"></i>Add
+      </button>
+    </div>
+    <div formArrayName="experience">
+      @for (group of form.controls.experience.controls; track group; let i = $index) {
+        <div class="entry" [formGroupName]="i">
+          <input
+            class="control"
+            formControlName="roleTitle"
+            placeholder="Role"
+            [attr.aria-label]="'Role ' + (i + 1)"
+          />
+          <input
+            class="control"
+            formControlName="organization"
+            placeholder="Organisation"
+            [attr.aria-label]="'Organisation ' + (i + 1)"
+          />
+          <input
+            class="control"
+            formControlName="period"
+            placeholder="2015 to 2019"
+            [attr.aria-label]="'Period ' + (i + 1)"
+          />
+          <button
+            type="button"
+            class="icon-btn"
+            [attr.aria-label]="'Remove experience ' + (i + 1)"
+            (click)="removeAt(form.controls.experience, i)"
+          >
+            <i class="ph ph-x" aria-hidden="true"></i>
+          </button>
+        </div>
+      } @empty {
+        <p class="hint">Nothing listed.</p>
+      }
+    </div>
+
+    <div class="card-head sub-head">
+      <h2>Awards</h2>
+      <button type="button" class="btn btn-sm btn-ghost" (click)="addAward()">
+        <i class="ph ph-plus" aria-hidden="true"></i>Add
+      </button>
+    </div>
+    <div formArrayName="awards">
+      @for (group of form.controls.awards.controls; track group; let i = $index) {
+        <div class="entry award" [formGroupName]="i">
+          <input
+            class="control"
+            formControlName="title"
+            placeholder="Award"
+            [attr.aria-label]="'Award ' + (i + 1)"
+          />
+          <input
+            class="control"
+            type="number"
+            formControlName="year"
+            [attr.aria-label]="'Year of award ' + (i + 1)"
+          />
+          <button
+            type="button"
+            class="icon-btn"
+            [attr.aria-label]="'Remove award ' + (i + 1)"
+            (click)="removeAt(form.controls.awards, i)"
+          >
+            <i class="ph ph-x" aria-hidden="true"></i>
+          </button>
+        </div>
+      } @empty {
+        <p class="hint">Nothing listed.</p>
+      }
+    </div>
+
+    <div class="form-actions">
+      <a class="btn btn-ghost" routerLink="/professor/profile">Cancel</a>
+      <button class="btn btn-primary" type="submit" [disabled]="saving$ | async">
+        Save profile
+      </button>
+    </div>
+  </form>
+</div>

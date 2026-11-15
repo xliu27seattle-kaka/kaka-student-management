@@ -1,0 +1,38 @@
+.grade-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.grade-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 110px 48px;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+
+  &:first-child {
+    border-top: 0;
+  }
+
+  label {
+    display: flex;
+    flex-direction: column;
+
+    b {
+      color: var(--ink-1);
+    }
+  }
+
+  .score {
+    height: 40px;
+    text-align: right;
+    font-family: var(--font-num);
+  }
+
+  .letter {
+    font: 700 16px/1 var(--font);
+    color: var(--accent);
+    text-align: center;
+  }
+}

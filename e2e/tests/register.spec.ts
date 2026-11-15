@@ -56,7 +56,7 @@ test.describe("registering", () => {
     await signIn(page, email, password);
     await expect(page).toHaveURL(/\/student$/);
     await expect(
-      page.getByRole("heading", { name: "Welcome, Enzo." }),
+      page.getByRole("heading", { name: "Welcome back, Enzo." }),
     ).toBeVisible();
 
     await expect

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Illustrated portrait">
+<rect width="200" height="200" fill="#dfe9e2"/>
+<circle cx="160" cy="40" r="26" fill="#ffffff" opacity=".35"/>
+<path d="M30 200 Q36 150 100 146 Q164 150 170 200Z" fill="#2f6b4f"/>
+<path d="M88 140 L100 158 L112 140Z" fill="#ffffff" opacity=".7"/>
+<rect x="88" y="124" width="24" height="22" rx="8" fill="#8d5a3b"/>
+
+<ellipse cx="100" cy="100" rx="38" ry="44" fill="#8d5a3b"/>
+<ellipse cx="62" cy="104" rx="6" ry="9" fill="#8d5a3b"/><ellipse cx="138" cy="104" rx="6" ry="9" fill="#8d5a3b"/>
+<circle cx="100" cy="70" r="46" fill="#1d1512"/><circle cx="62" cy="88" r="20" fill="#1d1512"/><circle cx="138" cy="88" r="20" fill="#1d1512"/>
+<circle cx="84" cy="100" r="3.5" fill="#1d1d1d"/><circle cx="116" cy="100" r="3.5" fill="#1d1d1d"/>
+<path d="M88 122 Q100 130 112 122" fill="none" stroke="#5a2e22" stroke-width="3" stroke-linecap="round"/>
+<path d="M76 88 Q84 84 92 88 M108 88 Q116 84 124 88" fill="none" stroke="#1d1512" stroke-width="3" stroke-linecap="round"/>
+<g fill="none" stroke="#1d1d1d" stroke-width="3"><circle cx="84" cy="100" r="11"/><circle cx="116" cy="100" r="11"/><path d="M95 100h10"/></g>
+</svg>

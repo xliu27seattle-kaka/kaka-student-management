@@ -1,0 +1,93 @@
+@let vm = (vm$ | async)!;
+<div class="shell" [class.top]="vm.theme.layout === 'top'">
+  <header class="rail no-print">
+    <a class="brand" [routerLink]="vm.nav[0]?.link ?? '/'">
+      <span class="brand-mark">K</span>
+      <span class="brand-text">
+        <b>Kaka</b>
+        <small>{{ vm.area }}</small>
+      </span>
+    </a>
+
+    <nav class="nav" aria-label="Main">
+      @for (item of vm.nav; track item.link) {
+        <a
+          [routerLink]="item.link"
+          routerLinkActive="on"
+          [routerLinkActiveOptions]="{ exact: !!item.exact }"
+          ariaCurrentWhenActive="page"
+        >
+          <i class="ph" [class]="'ph ' + item.icon" aria-hidden="true"></i>
+          <span>{{ item.label }}</span>
+          @if (item.badge === 'unread' && vm.unread > 0) {
+            <span class="count" [attr.aria-label]="vm.unread + ' unread'">{{ vm.unread }}</span>
+          }
+        </a>
+      }
+    </nav>
+
+    <div class="rail-foot">
+      <details class="theme-menu" #themeMenu>
+        <summary>
+          <span
+            class="swatch"
+            [style.--a]="vm.theme.swatch[0]"
+            [style.--b]="vm.theme.swatch[1]"
+          ></span>
+          <span class="label">{{ vm.theme.name }}</span>
+          <i class="ph ph-caret-up-down" aria-hidden="true"></i>
+        </summary>
+        <div class="menu" role="group" aria-label="Theme">
+          @for (option of themeOptions; track option.id) {
+            <button
+              type="button"
+              [class.on]="option.id === vm.theme.id"
+              [attr.aria-pressed]="option.id === vm.theme.id"
+              (click)="chooseTheme(option.id)"
+            >
+              <span
+                class="swatch"
+                [style.--a]="option.swatch[0]"
+                [style.--b]="option.swatch[1]"
+              ></span>
+              {{ option.name }}
+            </button>
+          }
+        </div>
+      </details>
+
+      @if (vm.user; as user) {
+        <div class="me">
+          <a
+            class="avatar"
+            [routerLink]="vm.accountLink"
+            [attr.aria-label]="'Account of ' + user.firstName"
+          >
+            {{ vm.initials }}
+          </a>
+          <a class="who" [routerLink]="vm.accountLink">
+            <b>{{ user.firstName }} {{ user.lastName }}</b>
+            <small>{{ user.email }}</small>
+          </a>
+          <button
+            type="button"
+            class="icon-btn sign-out"
+            aria-label="Sign out"
+            title="Sign out"
+            (click)="signOut()"
+          >
+            <i class="ph ph-sign-out" aria-hidden="true"></i>
+          </button>
+        </div>
+      }
+      <span class="studio-mark corner">Kaka Studio</span>
+    </div>
+  </header>
+
+  <main class="main" id="main">
+    <router-outlet />
+  </main>
+</div>
+
+<app-confirm-dialog />
+<app-toast-stack />

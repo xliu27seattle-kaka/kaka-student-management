@@ -1,0 +1,174 @@
+@let detail = detail$ | async;
+@let semester = semester$ | async;
+<div class="page" style="max-width: 1040px">
+  <header class="page-head rise">
+    <div>
+      @if (semester) {
+        <a class="back-link" [routerLink]="['/admin/semesters', semester.id]"
+          ><i class="ph ph-arrow-left" aria-hidden="true"></i>{{ semester.name }}</a
+        >
+      }
+      <h1>{{ detail ? detail.section.code : 'New section' }}</h1>
+      @if (semester) {
+        <div class="actions" style="margin-top: 10px">
+          <app-status-badge [status]="semester.status" />
+          @if (semester.status === 'READY') {
+            <span class="hint">Enrollment is open: only capacity and room can change.</span>
+          } @else if (semester.status === 'STARTED' || semester.status === 'ENDED') {
+            <span class="hint">The semester has started: this section is read-only.</span>
+          }
+        </div>
+      }
+    </div>
+    @if (detail && detail.section.semesterStatus === 'DRAFT') {
+      <button type="button" class="btn btn-quiet" (click)="remove(detail)">
+        <i class="ph ph-trash" aria-hidden="true"></i>Delete
+      </button>
+    }
+  </header>
+
+  <div class="grid-main-side">
+    <form class="card rise" style="--i: 1" [formGroup]="form" (ngSubmit)="save()" novalidate>
+      @if (error$ | async; as error) {
+        <div
+          class="alert alert-error"
+          role="alert"
+          style="margin-bottom: 16px"
+          data-testid="form-error"
+        >
+          <i class="ph ph-warning-circle" aria-hidden="true"></i><span>{{ error }}</span>
+        </div>
+      }
+      <div class="form-grid">
+        <div class="field span-2">
+          <label for="section-course">Course</label>
+          <select class="control" id="section-course" formControlName="courseId">
+            <option [ngValue]="null" disabled>Choose a course</option>
+            @for (c of courses$ | async; track c.id) {
+              <option [ngValue]="c.id">{{ c.code }} · {{ c.title }} ({{ c.credits }} cr)</option>
+            }
+            @if (detail && !listed((courses$ | async) ?? [], detail.section.courseId)) {
+              <option [ngValue]="detail.section.courseId">
+                {{ detail.section.courseCode }} · {{ detail.section.courseTitle }}
+              </option>
+            }
+          </select>
+        </div>
+        <div class="field span-2">
+          <label for="section-professor">Professor</label>
+          <select class="control" id="section-professor" formControlName="professorId">
+            <option [ngValue]="null" disabled>Choose a professor</option>
+            @for (p of professors$ | async; track p.id) {
+              <option [ngValue]="p.id">
+                {{ p.firstName }} {{ p.lastName }} · {{ p.professorNo }}
+              </option>
+            }
+          </select>
+        </div>
+        <div class="field">
+          <label for="section-capacity">Capacity</label>
+          <input
+            class="control"
+            id="section-capacity"
+            type="number"
+            min="1"
+            max="200"
+            formControlName="capacity"
+          />
+          <span class="hint">20 seats unless you say otherwise.</span>
+        </div>
+        <div class="field">
+          <label for="section-room">Room</label>
+          <input
+            class="control"
+            id="section-room"
+            formControlName="room"
+            placeholder="Hall B 204"
+          />
+        </div>
+      </div>
+
+      <div class="meetings">
+        <div class="card-head" style="margin: 24px 0 8px">
+          <h2>Weekly meetings</h2>
+          @if (!meetings.disabled) {
+            <button type="button" class="btn btn-sm btn-ghost" (click)="addMeeting()">
+              <i class="ph ph-plus" aria-hidden="true"></i>Add meeting
+            </button>
+          }
+        </div>
+        <p class="hint" style="margin-bottom: 12px">
+          Classes need at least 10 minutes between them, for the professor and for every student.
+        </p>
+        @for (meeting of meetings.controls; track meeting; let i = $index) {
+          <div class="meeting-row" [formGroup]="meeting">
+            <select
+              class="control"
+              formControlName="day"
+              [attr.aria-label]="'Day of meeting ' + (i + 1)"
+            >
+              @for (d of days; track d.value) {
+                <option [value]="d.value">{{ d.label }}</option>
+              }
+            </select>
+            <input
+              class="control"
+              type="time"
+              formControlName="start"
+              [attr.aria-label]="'Start of meeting ' + (i + 1)"
+            />
+            <span aria-hidden="true">to</span>
+            <input
+              class="control"
+              type="time"
+              formControlName="end"
+              [attr.aria-label]="'End of meeting ' + (i + 1)"
+            />
+            @if (!meetings.disabled) {
+              <button
+                type="button"
+                class="icon-btn"
+                [attr.aria-label]="'Remove meeting ' + (i + 1)"
+                (click)="removeMeeting(i)"
+              >
+                <i class="ph ph-x" aria-hidden="true"></i>
+              </button>
+            }
+          </div>
+        }
+      </div>
+
+      @if (!form.disabled) {
+        <div class="form-actions">
+          <a
+            class="btn btn-ghost"
+            [routerLink]="semester ? ['/admin/semesters', semester.id] : '/admin/semesters'"
+            >Cancel</a
+          >
+          <button class="btn btn-primary" type="submit" [disabled]="saving$ | async">
+            Save section
+          </button>
+        </div>
+      }
+    </form>
+
+    @if (detail) {
+      <aside class="card rise" style="--i: 2">
+        <h2>Class list</h2>
+        <p class="hint" style="margin-bottom: 12px">
+          {{ detail.section.enrolledCount }} of {{ detail.section.capacity }} seats taken
+        </p>
+        @for (r of detail.roster; track r.enrollmentId) {
+          <div class="roster-line">
+            <a [routerLink]="['/admin/students', r.studentId]"
+              >{{ r.firstName }} {{ r.lastName }}</a
+            >
+            <span class="hint">{{ r.letterGrade ?? (r.status === 'WITHDRAWN' ? 'W' : '') }}</span>
+          </div>
+        } @empty {
+          <p class="hint">Nobody enrolled yet.</p>
+        }
+      </aside>
+    }
+  </div>
+</div>

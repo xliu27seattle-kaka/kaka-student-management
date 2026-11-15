@@ -1,0 +1,94 @@
+@let state = (store.state$ | async)!;
+@let semesters = semesters$ | async;
+<div class="page">
+  <header class="page-head rise">
+    <div>
+      <span class="eyebrow">Enrollment</span>
+      <h1>Choose your sections</h1>
+      <p>Greyed-out sections say why you cannot take them. Hover one to see it on your week.</p>
+    </div>
+    @if (semesters && semesters.length) {
+      <select
+        class="control"
+        style="width: auto"
+        aria-label="Semester"
+        (change)="choose($any($event.target).value)"
+      >
+        @for (s of semesters; track s.id) {
+          <option [value]="s.id" [selected]="s.id === state.semester?.id">{{ s.name }}</option>
+        }
+      </select>
+    }
+  </header>
+
+  @if (semesters && semesters.length === 0) {
+    <div class="card">
+      <app-empty-state
+        icon="ph-calendar-x"
+        title="Enrollment is closed"
+        message="No semester is open for enrollment right now. You will be able to choose sections once the registrar opens the next one."
+      />
+    </div>
+  } @else {
+    <div class="grid-main-side">
+      <section class="card flush rise" style="--i: 1">
+        <div class="toolbar pad">
+          <div class="input">
+            <i class="ph ph-magnifying-glass" aria-hidden="true"></i>
+            <input
+              type="search"
+              placeholder="Course, title or professor"
+              aria-label="Search sections"
+              (input)="query$.next($any($event.target).value)"
+            />
+          </div>
+          <label class="check">
+            <input type="checkbox" (change)="onlyAvailable$.next($any($event.target).checked)" />
+            Only what I can take
+          </label>
+          @if (state.semester) {
+            <app-status-badge [status]="state.semester.status" />
+          }
+        </div>
+        @if (state.loading && state.offerings.length === 0) {
+          <app-skeleton-rows />
+        } @else if (state.error) {
+          <app-empty-state
+            kind="error"
+            icon="ph-warning-circle"
+            title="Sections could not load"
+            [message]="state.error"
+          />
+        } @else {
+          @for (o of visible$ | async; track o.section.id) {
+            <app-offering-row
+              [offering]="o"
+              [busy]="state.busyId === o.section.id"
+              (enrolled)="store.enroll($event)"
+              (dropped)="drop($event)"
+              (previewed)="store.preview($event)"
+            />
+          } @empty {
+            <app-empty-state icon="ph-books" title="No sections match" />
+          }
+        }
+      </section>
+
+      <aside class="sticky rise" style="--i: 2">
+        <section class="card">
+          <div class="totals">
+            <div>
+              <span class="hint">Enrolled</span>
+              <b data-testid="enrolled-count">{{ (store.counts$ | async)?.enrolled ?? 0 }}</b>
+            </div>
+            <div>
+              <span class="hint">Credits</span>
+              <b data-testid="enrolled-credits">{{ store.credits$ | async }}</b>
+            </div>
+          </div>
+          <app-schedule-grid [entries]="(store.schedule$ | async) ?? []" />
+        </section>
+      </aside>
+    </div>
+  }
+</div>

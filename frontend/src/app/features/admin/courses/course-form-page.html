@@ -1,0 +1,121 @@
+@let loaded = loaded$ | async;
+<div class="page" style="max-width: 920px">
+  <header class="page-head rise">
+    <div>
+      <a class="back-link" [routerLink]="loaded ? ['/admin/courses', loaded.id] : '/admin/courses'">
+        <i class="ph ph-arrow-left" aria-hidden="true"></i>{{ loaded ? loaded.code : 'Courses' }}
+      </a>
+      <h1>{{ id() ? 'Edit course' : 'New course' }}</h1>
+      <p>Changing prerequisites applies to future enrollments only.</p>
+    </div>
+  </header>
+
+  <form class="card rise" style="--i: 1" [formGroup]="form" (ngSubmit)="save()" novalidate>
+    @if (error$ | async; as error) {
+      <div
+        class="alert alert-error"
+        role="alert"
+        style="margin-bottom: 16px"
+        data-testid="form-error"
+      >
+        <i class="ph ph-warning-circle" aria-hidden="true"></i><span>{{ error }}</span>
+      </div>
+    }
+    <div class="form-grid">
+      <div class="field">
+        <label for="course-code">Code</label>
+        <input
+          class="control"
+          id="course-code"
+          formControlName="code"
+          placeholder="CS201"
+          [attr.aria-invalid]="bad('code')"
+        />
+        @if (bad('code')) {
+          <span class="field-error">{{
+            form.controls.code.errors?.['server'] ??
+              'Two to four letters and three digits, like CS201.'
+          }}</span>
+        }
+      </div>
+      <div class="field">
+        <label for="course-department">Department</label>
+        <input
+          class="control"
+          id="course-department"
+          formControlName="department"
+          placeholder="CS"
+          [attr.aria-invalid]="bad('department')"
+        />
+        @if (bad('department')) {
+          <span class="field-error">Two to six letters.</span>
+        }
+      </div>
+      <div class="field span-2">
+        <label for="course-title">Title</label>
+        <input
+          class="control"
+          id="course-title"
+          formControlName="title"
+          [attr.aria-invalid]="bad('title')"
+        />
+        @if (bad('title')) {
+          <span class="field-error">Required.</span>
+        }
+      </div>
+      <div class="field">
+        <label for="course-credits">Credits</label>
+        <input
+          class="control"
+          id="course-credits"
+          type="number"
+          min="1"
+          max="6"
+          formControlName="credits"
+          [attr.aria-invalid]="bad('credits')"
+        />
+        @if (bad('credits')) {
+          <span class="field-error">From 1 to 6.</span>
+        } @else {
+          <span class="hint">Most courses are 3.</span>
+        }
+      </div>
+      <div class="field">
+        <span class="label">Status</span>
+        <label class="check">
+          <input type="checkbox" formControlName="active" />
+          Active: can get new sections
+        </label>
+      </div>
+      <div class="field span-2">
+        <label for="course-description">Description</label>
+        <textarea
+          class="control"
+          id="course-description"
+          formControlName="description"
+          rows="4"
+        ></textarea>
+      </div>
+      <div class="field span-2">
+        <span class="label">Prerequisites</span>
+        @if (catalogue$ | async; as courses) {
+          <app-prerequisite-picker
+            formControlName="prerequisiteIds"
+            [courses]="courses"
+            [excludeId]="loaded?.id ?? null"
+          />
+        }
+      </div>
+    </div>
+    <div class="form-actions">
+      <a
+        class="btn btn-ghost"
+        [routerLink]="loaded ? ['/admin/courses', loaded.id] : '/admin/courses'"
+        >Cancel</a
+      >
+      <button class="btn btn-primary" type="submit" [disabled]="saving$ | async">
+        Save course
+      </button>
+    </div>
+  </form>
+</div>

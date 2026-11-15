@@ -1,28 +1,5 @@
-/* Design tokens of the default theme, Sage Ledger. Every colour in the app comes from here. */
-:root {
-  --page: #eef0ec;
-  --bg: #ffffff;
-  --paper: #fbfaf6;
-  --panel: #f1f3ee;
-  --line: rgba(20, 32, 26, 0.1);
-  --ink-1: #14201a;
-  --ink-2: #3c4a43;
-  --ink-3: #66766d;
-  --accent: #2f6b4f;
-  --accent-strong: #27593f;
-  --accent-soft: rgba(47, 107, 79, 0.12);
-  --gold: #c08a3e;
-  --danger: #b3261e;
-  --danger-soft: rgba(179, 38, 30, 0.08);
-  --ok: #2c7a8c;
-  --ok-soft: rgba(44, 122, 140, 0.12);
-
-  --radius: 12px;
-  --radius-lg: 24px;
-  --ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --font: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-mono: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
-}
+@use 'styles/themes';
+@use 'styles/app-ui';
 
 *,
 *::before,
@@ -45,13 +22,18 @@ body {
 }
 
 button,
-input {
+input,
+select,
+textarea {
   font: inherit;
 }
 
 h1,
 h2,
-p {
+h3,
+p,
+dl,
+dd {
   margin: 0;
 }
 
@@ -97,7 +79,7 @@ p {
       background-color 0.3s ease-in-out;
 
     &:hover {
-      border-color: rgba(20, 32, 26, 0.2);
+      border-color: var(--line-strong);
     }
 
     &:focus-visible {
@@ -179,7 +161,7 @@ p {
 
 .btn-primary {
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
 
   &:hover:not(:disabled) {
     background: var(--accent-strong);
@@ -219,7 +201,7 @@ p {
   transition: background-color 0.3s ease-in-out;
 
   &:hover {
-    background: #e7ebe4;
+    background: var(--panel-hover);
   }
 
   .ph {

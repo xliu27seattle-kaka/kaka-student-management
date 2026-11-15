@@ -1,0 +1,126 @@
+@let state = (state$ | async)!;
+<div class="page" style="max-width: 1040px">
+  @if (state.loading) {
+    <div class="card flush"><app-skeleton-rows /></div>
+  } @else if (state.error) {
+    <div class="card">
+      <app-empty-state
+        kind="error"
+        icon="ph-warning-circle"
+        title="Graduation could not load"
+        [message]="state.error.message"
+      />
+    </div>
+  } @else if (state.data; as g) {
+    @if (g.academicStatus === 'GRADUATED') {
+      <header class="page-head rise no-print">
+        <div>
+          <span class="eyebrow">Graduation</span>
+          <h1>Congratulations, {{ g.firstName }}.</h1>
+          <p>Your certificate and your official transcript are ready to print.</p>
+        </div>
+        <div class="actions">
+          <a class="btn btn-ghost" routerLink="/student/transcript"
+            ><i class="ph ph-scroll" aria-hidden="true"></i>Official transcript</a
+          >
+          <button type="button" class="btn btn-primary" (click)="print()">
+            <i class="ph ph-printer" aria-hidden="true"></i>Print certificate
+          </button>
+        </div>
+      </header>
+      <article class="certificate print-area rise" style="--i: 1">
+        <app-watermark />
+        <div class="frame">
+          <span class="studio-mark">Kaka Studio</span>
+          <p class="pre">This certifies that</p>
+          <h2>{{ g.firstName }} {{ g.lastName }}</h2>
+          <p class="pre">
+            student number <span class="num">{{ g.studentNo }}</span>, has completed
+          </p>
+          <p class="credits">
+            <b class="num">{{ g.earnedCredits }}</b> credits
+          </p>
+          <p class="pre">and is awarded this certificate of graduation from</p>
+          <p class="school">Kaka Student Management</p>
+          <div class="signs">
+            <div><span class="line"></span><small>Registrar</small></div>
+            <div class="seal-mark" aria-hidden="true"><i class="ph ph-seal-check"></i></div>
+            <div>
+              <span class="line"></span><small>{{ g.graduatedAt | date: 'longDate' }}</small>
+            </div>
+          </div>
+          <small class="number">Certificate {{ g.certificateNo }}</small>
+        </div>
+      </article>
+    } @else {
+      <header class="page-head rise">
+        <div>
+          <span class="eyebrow">Graduation</span>
+          <h1>Your path to graduation</h1>
+          <p>
+            You can apply once you have earned {{ g.requiredCredits }} credits. There is no minimum
+            GPA.
+          </p>
+        </div>
+      </header>
+      <div class="grid-2">
+        <section class="card rise" style="--i: 1">
+          <h2>Progress</h2>
+          <div class="progress">
+            <div class="ring" [style.--p]="g.earnedCredits / g.requiredCredits">
+              <b class="num">{{ g.earnedCredits }}</b>
+              <small>of {{ g.requiredCredits }}</small>
+            </div>
+            <ul class="reasons">
+              @for (reason of g.reasons; track reason) {
+                <li><i class="ph ph-info" aria-hidden="true"></i>{{ reason }}</li>
+              } @empty {
+                <li class="ready">
+                  <i class="ph ph-check-circle" aria-hidden="true"></i>You meet every requirement.
+                </li>
+              }
+            </ul>
+          </div>
+          <div class="form-actions">
+            <button
+              type="button"
+              class="btn btn-primary"
+              [disabled]="!g.eligible"
+              (click)="apply()"
+            >
+              <i class="ph ph-graduation-cap" aria-hidden="true"></i>Apply for graduation
+            </button>
+          </div>
+        </section>
+        <section class="card rise" style="--i: 2">
+          <h2>Application</h2>
+          @if (g.latestApplication; as a) {
+            <dl class="facts">
+              <div>
+                <dt>Status</dt>
+                <dd><app-status-badge [status]="a.status" /></dd>
+              </div>
+              <div>
+                <dt>Applied</dt>
+                <dd>{{ a.appliedAt | date: 'medium' }}</dd>
+              </div>
+              @if (a.decidedAt) {
+                <div>
+                  <dt>Decided</dt>
+                  <dd>{{ a.decidedAt | date: 'medium' }}</dd>
+                </div>
+              }
+            </dl>
+            @if (a.status === 'REJECTED') {
+              <p class="hint" style="margin-top: 12px">
+                Your last application was not approved. You may apply again.
+              </p>
+            }
+          } @else {
+            <p class="hint">You have not applied yet.</p>
+          }
+        </section>
+      </div>
+    }
+  }
+</div>

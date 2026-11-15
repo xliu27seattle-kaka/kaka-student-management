@@ -1,0 +1,133 @@
+<div class="page">
+  @if (semester$ | async; as state) {
+    @if (state.loading && !state.data) {
+      <div class="card flush"><app-skeleton-rows /></div>
+    } @else if (state.error) {
+      <div class="card">
+        <app-empty-state
+          kind="error"
+          icon="ph-warning-circle"
+          title="This semester could not load"
+          [message]="state.error.message"
+        />
+      </div>
+    } @else if (state.data; as s) {
+      <header class="page-head rise">
+        <div>
+          <a class="back-link" routerLink="/admin/semesters"
+            ><i class="ph ph-arrow-left" aria-hidden="true"></i>Semesters</a
+          >
+          <span class="eyebrow">{{ s.code }}</span>
+          <h1>{{ s.name }}</h1>
+          <p>{{ s.startDate | date: 'longDate' }} – {{ s.endDate | date: 'longDate' }}</p>
+          <div class="actions" style="margin-top: 10px">
+            <app-status-badge [status]="s.status" />
+            <span class="badge plain">{{ s.sectionCount }} sections</span>
+            <span class="badge plain">{{ s.enrolledCount }} enrolled</span>
+          </div>
+        </div>
+        <div class="actions">
+          @if (s.status === 'DRAFT') {
+            <button type="button" class="btn btn-quiet" (click)="remove(s)">
+              <i class="ph ph-trash" aria-hidden="true"></i>Delete
+            </button>
+          }
+          @for (next of s.allowedNext; track next) {
+            <button
+              type="button"
+              class="btn"
+              [class.btn-primary]="next !== 'DRAFT'"
+              [class.btn-ghost]="next === 'DRAFT'"
+              (click)="move(s, next)"
+            >
+              <i class="ph" [class]="'ph ' + transitions[next].icon" aria-hidden="true"></i
+              >{{ transitions[next].label }}
+            </button>
+          }
+        </div>
+      </header>
+
+      @if (blocked$ | async; as blocked) {
+        <div class="alert alert-error rise" role="alert" data-testid="transition-error">
+          <i class="ph ph-warning-circle" aria-hidden="true"></i><span>{{ blocked }}</span>
+        </div>
+      }
+
+      <div class="grid-main-side">
+        <section class="card flush rise" style="--i: 1">
+          <div class="card-head pad">
+            <h2>Sections</h2>
+            @if (s.status === 'DRAFT') {
+              <a
+                class="btn btn-sm btn-primary"
+                [routerLink]="['/admin/semesters', s.id, 'sections', 'new']"
+              >
+                <i class="ph ph-plus" aria-hidden="true"></i>Add section
+              </a>
+            }
+          </div>
+          @if (sections$ | async; as sections) {
+            @if (sections.loading) {
+              <app-skeleton-rows [count]="3" />
+            } @else {
+              <div class="table-wrap">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Section</th>
+                      <th>Professor</th>
+                      <th>Schedule</th>
+                      <th>Room</th>
+                      <th class="right">Seats</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (sec of sections.data; track sec.id) {
+                      <tr>
+                        <td>
+                          <a class="row-link" [routerLink]="['/admin/sections', sec.id]">{{
+                            sec.code
+                          }}</a>
+                          <div class="muted">{{ sec.courseTitle }}</div>
+                        </td>
+                        <td>{{ sec.professorName }}</td>
+                        <td class="muted">{{ summary(sec) }}</td>
+                        <td class="muted">{{ sec.room || '—' }}</td>
+                        <td class="right num">{{ sec.enrolledCount }}/{{ sec.capacity }}</td>
+                      </tr>
+                    } @empty {
+                      <tr>
+                        <td colspan="5">
+                          <app-empty-state
+                            icon="ph-chalkboard"
+                            title="No sections yet"
+                            [message]="s.status === 'DRAFT' ? 'Add the first one.' : null"
+                          />
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          }
+        </section>
+
+        @if (s.status !== 'ENDED') {
+          <form class="card rise" style="--i: 2" [formGroup]="form" (ngSubmit)="save(s)" novalidate>
+            <h2>Details</h2>
+            @if (formError$ | async; as error) {
+              <div class="alert alert-error" role="alert" style="margin-bottom: 12px">
+                {{ error }}
+              </div>
+            }
+            <app-semester-fields [form]="form" />
+            <div class="form-actions">
+              <button class="btn btn-primary" type="submit" [disabled]="!form.dirty">Save</button>
+            </div>
+          </form>
+        }
+      </div>
+    }
+  }
+</div>

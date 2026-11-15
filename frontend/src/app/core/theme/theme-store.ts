@@ -1,0 +1,82 @@
+import { DOCUMENT } from '@angular/common';
+import { Injectable, inject } from '@angular/core';
+import { BehaviorSubject, Observable, map } from 'rxjs';
+
+export type ThemeId = 'sage' | 'midnight' | 'graphite' | 'cobalt';
+
+export interface ThemeOption {
+  id: ThemeId;
+  name: string;
+  /** Graphite & Lime puts the navigation along the top; the others use a sidebar. */
+  layout: 'side' | 'top';
+  /** Two colours for the swatch in the switcher. */
+  swatch: [string, string];
+}
+
+export const THEMES: readonly ThemeOption[] = [
+  { id: 'sage', name: 'Sage Ledger', layout: 'side', swatch: ['#eef0ec', '#2f6b4f'] },
+  { id: 'midnight', name: 'Midnight & Amber', layout: 'side', swatch: ['#12141c', '#e8a33d'] },
+  { id: 'graphite', name: 'Graphite & Lime', layout: 'top', swatch: ['#1f1f1f', '#b6e018'] },
+  { id: 'cobalt', name: 'Cobalt Trust', layout: 'side', swatch: ['#111a2e', '#2d5bd8'] },
+];
+
+export const THEME_STORAGE_KEY = 'kaka.theme';
+const DEFAULT_THEME: ThemeId = 'sage';
+
+/**
+ * The chosen theme, remembered in the browser. The app shell attaches it to the page while a user
+ * is signed in; the sign-in pages always use the default.
+ */
+@Injectable({ providedIn: 'root' })
+export class ThemeStore {
+  private readonly document = inject(DOCUMENT);
+  private readonly theme = new BehaviorSubject<ThemeId>(readStoredTheme());
+  private attached = false;
+
+  readonly theme$: Observable<ThemeId> = this.theme.asObservable();
+  readonly option$: Observable<ThemeOption> = this.theme$.pipe(map(optionOf));
+
+  get current(): ThemeId {
+    return this.theme.value;
+  }
+
+  select(id: ThemeId): void {
+    try {
+      localStorage.setItem(THEME_STORAGE_KEY, id);
+    } catch {
+      // storage can be unavailable (private mode); the choice still applies to this visit
+    }
+    this.theme.next(id);
+    if (this.attached) this.apply(id);
+  }
+
+  /** Called by the app shell when it appears. */
+  attach(): void {
+    this.attached = true;
+    this.apply(this.theme.value);
+  }
+
+  /** Called by the app shell when it goes away (sign out). */
+  detach(): void {
+    this.attached = false;
+    this.document.documentElement.removeAttribute('data-theme');
+  }
+
+  private apply(id: ThemeId): void {
+    this.document.documentElement.setAttribute('data-theme', id);
+  }
+}
+
+export function optionOf(id: ThemeId): ThemeOption {
+  return THEMES.find((theme) => theme.id === id) ?? THEMES[0];
+}
+
+function readStoredTheme(): ThemeId {
+  try {
+    const stored = localStorage.getItem(THEME_STORAGE_KEY);
+    if (THEMES.some((theme) => theme.id === stored)) return stored as ThemeId;
+  } catch {
+    // fall through to the default
+  }
+  return DEFAULT_THEME;
+}

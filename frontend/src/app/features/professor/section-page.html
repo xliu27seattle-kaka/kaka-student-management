@@ -1,0 +1,196 @@
+@let state = (state$ | async)!;
+@let tab = (tab$ | async)!;
+<div class="page">
+  @if (state.loading && !state.data) {
+    <div class="card flush"><app-skeleton-rows /></div>
+  } @else if (state.error) {
+    <div class="card">
+      <app-empty-state
+        kind="error"
+        icon="ph-warning-circle"
+        title="This section could not load"
+        [message]="state.error.message"
+      />
+    </div>
+  } @else if (state.data; as d) {
+    <header class="page-head rise">
+      <div>
+        <a class="back-link" routerLink="/professor"
+          ><i class="ph ph-arrow-left" aria-hidden="true"></i>Teaching</a
+        >
+        <span class="eyebrow">{{ d.section.semesterName }}</span>
+        <h1>{{ d.section.code }} · {{ d.section.courseTitle }}</h1>
+        <p>
+          {{ summary(d) }}{{ d.section.room ? ' · ' + d.section.room : '' }} ·
+          {{ d.section.credits }} credits
+        </p>
+        <div class="actions" style="margin-top: 10px">
+          <app-status-badge [status]="d.section.semesterStatus" />
+          <span class="badge plain"
+            >{{ d.section.enrolledCount }}/{{ d.section.capacity }} seats</span
+          >
+        </div>
+      </div>
+    </header>
+
+    <app-tabs
+      [tabs]="tabs"
+      [active]="tab"
+      [canLeave]="leaveTab"
+      (activeChange)="selectTab($event)"
+    />
+
+    @switch (tab) {
+      @case ('roster') {
+        <section
+          class="card flush rise"
+          role="tabpanel"
+          aria-labelledby="tab-roster"
+          id="tab-roster-panel"
+        >
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Student</th>
+                  <th>Number</th>
+                  <th>Email</th>
+                  <th>Status</th>
+                  <th class="right">Grade</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (r of d.roster; track r.enrollmentId) {
+                  <tr>
+                    <td class="strong">{{ r.firstName }} {{ r.lastName }}</td>
+                    <td class="num">{{ r.studentNo }}</td>
+                    <td class="muted">{{ r.email }}</td>
+                    <td><app-status-badge [status]="r.status" /></td>
+                    <td class="right strong">
+                      {{ r.status === 'WITHDRAWN' ? 'W' : (r.letterGrade ?? '—') }}
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="5">
+                      <app-empty-state icon="ph-users" title="Nobody enrolled yet" />
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+      }
+      @case ('grades') {
+        <section
+          class="card rise"
+          role="tabpanel"
+          aria-labelledby="tab-grades"
+          id="tab-grades-panel"
+        >
+          @if (d.section.semesterStatus === 'STARTED') {
+            <div class="card-head">
+              <h2>Scores, 0 to 100</h2>
+              <span class="hint"
+                >{{ missing() }} still to grade · the semester cannot end until everyone has a
+                score</span
+              >
+            </div>
+          } @else {
+            <div class="alert alert-ok" style="margin-bottom: 16px">
+              <i class="ph ph-info" aria-hidden="true"></i>
+              <span>
+                @if (d.section.semesterStatus === 'ENDED') {
+                  The semester has ended; these grades are final.
+                } @else {
+                  Grades can be entered once the semester has started.
+                }
+              </span>
+            </div>
+          }
+          @if (gradeRows.length) {
+            <div class="grade-list">
+              @for (row of gradeRows; track row.enrollmentId; let i = $index) {
+                <div class="grade-row">
+                  <label [for]="'score-' + row.enrollmentId">
+                    <b>{{ row.firstName }} {{ row.lastName }}</b>
+                    <span class="hint num">{{ row.studentNo }}</span>
+                  </label>
+                  <input
+                    class="control score"
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="1"
+                    [id]="'score-' + row.enrollmentId"
+                    [formControl]="grades.at(i)"
+                    [attr.aria-invalid]="grades.at(i).invalid"
+                  />
+                  <span class="letter" aria-live="polite">{{ preview(i) }}</span>
+                </div>
+              }
+            </div>
+            @if (d.section.semesterStatus === 'STARTED') {
+              <div class="form-actions">
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  [disabled]="!grades.dirty || (saving$ | async)"
+                  (click)="saveGrades()"
+                >
+                  Save grades
+                </button>
+              </div>
+            }
+          } @else if (d.section.semesterStatus !== 'ENDED') {
+            <app-empty-state icon="ph-users" title="Nobody to grade" />
+          } @else {
+            <p class="hint">Final grades are on the Roster tab.</p>
+          }
+        </section>
+      }
+      @case ('message') {
+        <form
+          class="card rise"
+          role="tabpanel"
+          aria-labelledby="tab-message"
+          id="tab-message-panel"
+          [formGroup]="message"
+          (ngSubmit)="send(d)"
+          novalidate
+        >
+          <h2>Message everyone enrolled</h2>
+          <p class="hint" style="margin-bottom: 16px">
+            {{ d.section.enrolledCount }} students get it in their inbox and by email.
+          </p>
+          <div class="form-grid" style="grid-template-columns: minmax(0, 1fr)">
+            <div class="field">
+              <label for="msg-subject">Subject</label>
+              <input class="control" id="msg-subject" formControlName="subject" maxlength="150" />
+            </div>
+            <div class="field">
+              <label for="msg-body">Message</label>
+              <textarea
+                class="control"
+                id="msg-body"
+                rows="6"
+                formControlName="body"
+                maxlength="4000"
+              ></textarea>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button
+              type="submit"
+              class="btn btn-primary"
+              [disabled]="d.section.enrolledCount === 0 || (sending$ | async)"
+            >
+              <i class="ph ph-paper-plane-tilt" aria-hidden="true"></i>Send to the class
+            </button>
+          </div>
+        </form>
+      }
+    }
+  }
+</div>

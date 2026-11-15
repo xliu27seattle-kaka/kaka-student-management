@@ -1,0 +1,241 @@
+@let state = (student$ | async)!;
+@let tab = (tab$ | async)!;
+<div class="page">
+  @if (state.loading && !state.data) {
+    <div class="card flush"><app-skeleton-rows /></div>
+  } @else if (state.error) {
+    <div class="card">
+      <app-empty-state
+        kind="error"
+        icon="ph-warning-circle"
+        title="This student could not load"
+        [message]="state.error.message"
+      >
+        <a class="link" routerLink="/admin/students">Back to students</a>
+      </app-empty-state>
+    </div>
+  } @else if (state.data; as s) {
+    <header class="page-head rise no-print">
+      <div>
+        <a class="back-link" routerLink="/admin/students"
+          ><i class="ph ph-arrow-left" aria-hidden="true"></i>Students</a
+        >
+        <h1>{{ s.firstName }} {{ s.lastName }}</h1>
+        <p>
+          <span class="num">{{ s.studentNo }}</span> · {{ s.email }} · registered
+          {{ s.createdAt | date: 'mediumDate' }}
+        </p>
+        <div class="actions" style="margin-top: 10px">
+          <app-status-badge [status]="s.status" />
+          <app-status-badge [status]="s.academicStatus" />
+        </div>
+      </div>
+      <div class="actions">
+        @switch (s.status) {
+          @case ('PENDING') {
+            <button type="button" class="btn btn-ghost" (click)="act(s, 'reject')">Reject</button>
+            <button type="button" class="btn btn-primary" (click)="act(s, 'approve')">
+              <i class="ph ph-check" aria-hidden="true"></i>Approve
+            </button>
+          }
+          @case ('ACTIVE') {
+            <button type="button" class="btn btn-ghost" (click)="act(s, 'deactivate')">
+              Deactivate
+            </button>
+          }
+          @case ('INACTIVE') {
+            <button type="button" class="btn btn-ghost" (click)="act(s, 'reactivate')">
+              Reactivate
+            </button>
+          }
+        }
+        <button type="button" class="btn btn-quiet" (click)="remove(s)">
+          <i class="ph ph-trash" aria-hidden="true"></i>Delete
+        </button>
+      </div>
+    </header>
+
+    <div class="no-print">
+      <app-tabs
+        [tabs]="tabs"
+        [active]="tab"
+        [canLeave]="leaveTab"
+        (activeChange)="selectTab($event)"
+      />
+    </div>
+
+    @switch (tab) {
+      @case ('profile') {
+        <form
+          class="card rise"
+          role="tabpanel"
+          aria-labelledby="tab-profile"
+          id="tab-profile-panel"
+          [formGroup]="form"
+          (ngSubmit)="save(s)"
+          novalidate
+        >
+          <h2>Contact details</h2>
+          @if (formError$ | async; as error) {
+            <div class="alert alert-error" role="alert" style="margin-bottom: 16px">
+              {{ error }}
+            </div>
+          }
+          <app-person-fields [group]="form" prefix="student" />
+          <div class="form-actions">
+            <button
+              type="button"
+              class="btn btn-ghost"
+              [disabled]="!form.dirty"
+              (click)="discardChanges()"
+            >
+              Discard
+            </button>
+            <button
+              type="submit"
+              class="btn btn-primary"
+              [disabled]="!form.dirty || (saving$ | async)"
+            >
+              Save changes
+            </button>
+          </div>
+        </form>
+      }
+      @case ('enrollments') {
+        <div
+          class="grid-main-side"
+          role="tabpanel"
+          aria-labelledby="tab-enrollments"
+          id="tab-enrollments-panel"
+        >
+          <section class="card flush rise">
+            <div class="card-head pad"><h2>Enrollments</h2></div>
+            @let enrollments = (enrollments$ | async)!;
+            @if (enrollments.loading) {
+              <app-skeleton-rows [count]="3" />
+            } @else if (enrollments.error) {
+              <app-empty-state
+                kind="error"
+                icon="ph-warning-circle"
+                title="Enrollments could not load"
+                [message]="enrollments.error.message"
+              />
+            } @else {
+              <div class="table-wrap">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Section</th>
+                      <th>Semester</th>
+                      <th>Schedule</th>
+                      <th>Status</th>
+                      <th class="right">Grade</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (e of enrollments.data; track e.id) {
+                      <tr>
+                        <td>
+                          <span class="strong">{{ e.section.code }}</span>
+                          <div class="muted">{{ e.section.courseTitle }}</div>
+                        </td>
+                        <td>{{ e.section.semesterName }}</td>
+                        <td class="muted">{{ summary(e) }}</td>
+                        <td><app-status-badge [status]="e.status" /></td>
+                        <td class="right strong">{{ e.letterGrade ?? '—' }}</td>
+                        <td class="right">
+                          @if (
+                            e.status === 'ENROLLED' &&
+                            (e.section.semesterStatus === 'READY' ||
+                              e.section.semesterStatus === 'STARTED')
+                          ) {
+                            <button type="button" class="btn btn-sm btn-ghost" (click)="drop(e)">
+                              {{ e.section.semesterStatus === 'STARTED' ? 'Withdraw' : 'Drop' }}
+                            </button>
+                          }
+                        </td>
+                      </tr>
+                    } @empty {
+                      <tr>
+                        <td colspan="6">
+                          <app-empty-state icon="ph-books" title="No enrollments yet" />
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </section>
+
+          <aside class="card rise" style="--i: 1">
+            <h2>Enroll on their behalf</h2>
+            <p class="hint" style="margin-bottom: 12px">
+              The same rules apply as when the student enrolls: no override.
+            </p>
+            <select
+              class="control"
+              aria-label="Semester open for enrollment"
+              (change)="chooseSemester($any($event.target).value)"
+            >
+              <option value="">Choose an open semester</option>
+              @for (sem of semesters$ | async; track sem.id) {
+                <option [value]="sem.id">{{ sem.name }}</option>
+              }
+            </select>
+            @if (offerings$ | async; as offerings) {
+              <div class="offer-list">
+                @for (o of offerings.data; track o.section.id) {
+                  <div class="offer" [class.blocked]="!o.available">
+                    <div>
+                      <b>{{ o.section.code }}</b>
+                      <div class="hint">{{ summary(o) }}</div>
+                      @if (!o.available) {
+                        <div class="reason" [title]="reasonList(o)">
+                          {{ o.reasons[0]?.message }}
+                        </div>
+                      }
+                    </div>
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-primary"
+                      [disabled]="!o.available"
+                      (click)="enroll(o)"
+                    >
+                      Enroll
+                    </button>
+                  </div>
+                } @empty {
+                  <p class="hint">No sections in this semester.</p>
+                }
+              </div>
+            }
+          </aside>
+        </div>
+      }
+      @case ('transcript') {
+        <div role="tabpanel" aria-labelledby="tab-transcript" id="tab-transcript-panel">
+          @let transcript = (transcript$ | async)!;
+          @if (transcript.loading) {
+            <div class="card flush"><app-skeleton-rows /></div>
+          } @else if (transcript.error) {
+            <app-empty-state
+              kind="error"
+              icon="ph-warning-circle"
+              title="The transcript could not load"
+              [message]="transcript.error.message"
+            />
+          } @else if (transcript.data; as t) {
+            <div class="actions no-print" style="justify-content: flex-end; margin-bottom: 12px">
+              <button type="button" class="btn btn-ghost" (click)="print()">
+                <i class="ph ph-printer" aria-hidden="true"></i>Print
+              </button>
+            </div>
+            <app-transcript-sheet [transcript]="t" />
+          }
+        </div>
+      }
+    }
+  }
+</div>

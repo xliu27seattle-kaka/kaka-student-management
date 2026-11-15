@@ -1,0 +1,141 @@
+@let state = (state$ | async)!;
+@let filter = (filter$ | async)!;
+<div class="page">
+  <header class="page-head rise">
+    <div>
+      <span class="eyebrow">People</span>
+      <h1>Students</h1>
+      <p>Approve registrations, look up a student, or add one directly.</p>
+    </div>
+    <a class="btn btn-primary" routerLink="/admin/students/new">
+      <i class="ph ph-user-plus" aria-hidden="true"></i>New student
+    </a>
+  </header>
+
+  <div class="toolbar rise" style="--i: 1">
+    <div class="input">
+      <i class="ph ph-magnifying-glass" aria-hidden="true"></i>
+      <input
+        type="search"
+        placeholder="Search by name, email or student number"
+        aria-label="Search students"
+        (input)="search($any($event.target).value)"
+      />
+    </div>
+    <select
+      class="control"
+      aria-label="Account status"
+      [value]="filter.status"
+      (change)="setStatus($any($event.target).value)"
+    >
+      <option value="">All statuses</option>
+      @for (s of statuses; track s) {
+        <option [value]="s">{{ s.charAt(0) + s.slice(1).toLowerCase() }}</option>
+      }
+    </select>
+  </div>
+
+  <section class="card flush rise" style="--i: 2">
+    @if (state.loading) {
+      <app-skeleton-rows />
+    } @else if (state.error) {
+      <app-empty-state
+        kind="error"
+        icon="ph-warning-circle"
+        title="Students could not load"
+        [message]="state.error.message"
+      />
+    } @else if (state.data; as page) {
+      @if (page.items.length === 0) {
+        <app-empty-state
+          icon="ph-student"
+          title="No students match"
+          message="Try another status or search."
+        />
+      } @else {
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Number</th>
+                <th>Account</th>
+                <th>Studies</th>
+                <th>Registered</th>
+                <th class="right"><span class="sr-only">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (s of page.items; track s.id) {
+                <tr>
+                  <td>
+                    <a class="row-link" [routerLink]="['/admin/students', s.id]"
+                      >{{ s.firstName }} {{ s.lastName }}</a
+                    >
+                    <div class="muted">{{ s.email }}</div>
+                  </td>
+                  <td class="num">{{ s.studentNo }}</td>
+                  <td><app-status-badge [status]="s.status" /></td>
+                  <td><app-status-badge [status]="s.academicStatus" /></td>
+                  <td class="muted">{{ s.createdAt | date: 'mediumDate' }}</td>
+                  <td class="right">
+                    @if (s.status === 'PENDING') {
+                      <div class="actions" style="justify-content: flex-end">
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-ghost"
+                          (click)="decide(s, 'reject')"
+                        >
+                          Reject
+                        </button>
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-primary"
+                          (click)="decide(s, 'approve')"
+                        >
+                          Approve
+                        </button>
+                      </div>
+                    } @else {
+                      <a
+                        class="icon-btn"
+                        [routerLink]="['/admin/students', s.id]"
+                        [attr.aria-label]="'Open ' + s.firstName"
+                      >
+                        <i class="ph ph-arrow-right" aria-hidden="true"></i>
+                      </a>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        @if (page.totalPages > 1) {
+          <nav class="pager" aria-label="Pages">
+            <button
+              type="button"
+              class="btn btn-sm btn-ghost"
+              [disabled]="page.page === 0"
+              (click)="goTo(page.page - 1)"
+            >
+              Previous
+            </button>
+            <span class="hint"
+              >Page {{ page.page + 1 }} of {{ page.totalPages }} ·
+              {{ page.totalItems }} students</span
+            >
+            <button
+              type="button"
+              class="btn btn-sm btn-ghost"
+              [disabled]="page.page + 1 >= page.totalPages"
+              (click)="goTo(page.page + 1)"
+            >
+              Next
+            </button>
+          </nav>
+        }
+      }
+    }
+  </section>
+</div>
