@@ -622,7 +622,8 @@ dialog.modal {
 
 /* ── motion: staggered rise on load ── */
 .rise {
-  animation: rise 0.6s var(--ease) both;
+  /* backwards, not both: a held last frame would stop the cards inside from frosting */
+  animation: rise 0.6s var(--ease) backwards;
   animation-delay: calc(var(--i, 0) * 60ms);
 }
 
@@ -633,6 +634,7 @@ dialog.modal {
   [data-theme] {
     --surface: #ffffff;
     --glass-blur: none;
+    --rail-blur: none;
     --glass-edge: rgba(0, 0, 0, 0.15);
     --ink-2-on-glass: #333333;
     --ink-3-on-glass: #555555;
@@ -849,6 +851,7 @@ h2.sub {
   [data-theme] {
     --surface: var(--bg);
     --glass-blur: none;
+    --rail-blur: none;
     --glass-edge: var(--line);
     --rail-glass: var(--rail-bg);
     --veil: none;

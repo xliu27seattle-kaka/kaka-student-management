@@ -141,3 +141,40 @@ test.describe("themes", () => {
     await page.getByRole("radio", { name: /Sage Ledger/ }).click();
   });
 });
+
+test.describe("frosted glass", () => {
+  test("cards blur the photograph behind them, not only between page changes", async ({ page }) => {
+    await signInAs(page, STUDENT_EMAIL);
+    // A view-transition name cuts everything inside it off from the photograph, so cards inside
+    // would only be see-through, not frosted. The page area carries it only while it animates.
+    await expect
+      .poll(() => page.locator("#main").evaluate((el) => getComputedStyle(el).viewTransitionName))
+      .toBe("none");
+    const card = page.locator("#main .kpi").first();
+    await expect(card).toBeVisible();
+    expect(await card.evaluate((el) => getComputedStyle(el).backdropFilter)).toContain("blur(36px)");
+
+    // The same goes for an entrance animation that keeps holding its last frame around a card.
+    for (const [link, heading, glass] of [
+      ["Transcript", "Your academic record", ".sheet"],
+      ["Enroll", "Choose your sections", "aside .card"],
+    ]) {
+      await navLink(page, link).click();
+      await expect(page.getByRole("heading", { name: heading })).toBeVisible();
+      await expect(page.locator(`#main ${glass}`).first()).toBeVisible();
+      await expect.poll(() => page.evaluate(heldAnimationsAroundGlass)).toEqual([]);
+    }
+  });
+});
+
+/** Elements between a frosted surface and the page area that still hold an animation. */
+function heldAnimationsAroundGlass(): string[] {
+  const held = new Set<string>();
+  for (const glass of document.querySelectorAll("#main *")) {
+    if (getComputedStyle(glass).backdropFilter === "none") continue;
+    for (let el = glass.parentElement; el && el.id !== "main"; el = el.parentElement) {
+      if (el.getAnimations().length) held.add(`${el.tagName.toLowerCase()}.${[...el.classList].join(".")}`);
+    }
+  }
+  return [...held];
+}

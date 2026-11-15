@@ -76,7 +76,8 @@
   align-self: flex-start;
   padding: 3px 10px;
   border-radius: 999px;
-  background: var(--warn-soft);
+  /* the tint over a solid backing: on clear glass the photograph would show through the label */
+  background: linear-gradient(var(--warn-soft), var(--warn-soft)) var(--bg);
   color: var(--warn);
   font: 600 12px/18px var(--font);
 

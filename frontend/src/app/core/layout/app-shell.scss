@@ -25,11 +25,19 @@
   }
 }
 
-/* Text on glass uses greys one step further from the surface, so it stays at 4.5:1. */
+/* Text and links on glass use colours one step further from the surface, so they stay at 4.5:1. */
 .main {
   --ink-2: var(--ink-2-on-glass);
   --ink-3: var(--ink-3-on-glass);
-  /* page changes animate this area only; the sidebar stays still (styles/motion.scss) */
+  --link: var(--link-on-glass);
+}
+
+/*
+ * Page changes animate this area only; the sidebar stays still (styles/motion.scss). The name is
+ * given only while a transition runs: a named element cuts the cards inside it off from the
+ * photograph, so at rest they would be merely see-through instead of frosted.
+ */
+:host-context(html[data-transition]) .main {
   view-transition-name: page;
 }
 
@@ -42,8 +50,8 @@
   gap: 24px;
   padding: 20px 14px;
   background: var(--rail-glass);
-  -webkit-backdrop-filter: var(--glass-blur);
-  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--rail-blur);
+  backdrop-filter: var(--rail-blur);
   border-right: 1px solid var(--rail-line);
   color: var(--rail-ink);
   overflow-y: auto;

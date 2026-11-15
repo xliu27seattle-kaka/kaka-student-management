@@ -82,7 +82,7 @@ html[data-transition='page'] {
 
 /* ── switching tabs: the new panel comes in from the side the tabs moved toward ── */
 .tab-enter {
-  animation: tab-panel-in 0.28s var(--ease) both;
+  animation: tab-panel-in 0.28s var(--ease) backwards;
 }
 
 body:has(app-tabs[data-direction='back']) {

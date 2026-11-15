@@ -137,7 +137,7 @@ scripts/smoke-registrar.sh              # catalogue → semester → enrollment 
 scripts/e2e.sh                          # Playwright journeys in Chrome (needs Node and Chrome)
 ```
 
-Test counts: backend 257, notification service 19, frontend 47 (Vitest), Playwright 45, smoke scripts 23 + 32 checks.
+Test counts: backend 257, notification service 19, frontend 62 (Vitest), Playwright 46, smoke scripts 23 + 32 checks.
 
 The Playwright tests and smoke scripts add their own courses, semesters and students with random names, so they can run again and again. Some journeys read the demo semesters (Fall 2026 running, Spring 2027 open), so run them on demo data that has not been walked through the tour: reset with `docker compose down -v && docker compose up --build`.
 
