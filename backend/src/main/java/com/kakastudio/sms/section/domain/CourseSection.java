@@ -29,7 +29,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Section {
+public class CourseSection {
 
   public static final int DEFAULT_CAPACITY = 20;
 
@@ -70,7 +70,7 @@ public class Section {
   @Setter(AccessLevel.NONE)
   private List<MeetingTime> meetings = new ArrayList<>();
 
-  public Section(
+  public CourseSection(
       Course course,
       Semester semester,
       Professor professor,

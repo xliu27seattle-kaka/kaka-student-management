@@ -48,6 +48,8 @@ com.kakastudio.sms
 
 Each feature has `controller` → `service` (interfaces) → `service.impl` → `repository` / `domain`, plus `dto` records. Controllers only speak DTOs and depend only on service interfaces. Rules that are pure logic live in small classes with no Spring or database in them (`PrerequisiteGraph`, `MeetingTime`, `StandardGradeScale`, `GpaCalculator`, the `EnrollmentRule`s), which is where most unit tests point.
 
+`CourseSection` represents one teaching group of a course in a semester, assigned to a professor and identified by a letter (for example, CS201-A). The feature stays in the `section` package; the existing `sections` table, API routes and JSON field names are unchanged.
+
 Errors: a service throws a typed exception (`NotFoundException`, `ConflictException`, `RuleViolationException`, `ForbiddenException`) with a code from the one `ErrorCode` enum. `GlobalExceptionHandler` turns it, and every other failure, into the same body:
 
 ```json

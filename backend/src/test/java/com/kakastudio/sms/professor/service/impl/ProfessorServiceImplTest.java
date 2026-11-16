@@ -29,7 +29,7 @@ import com.kakastudio.sms.professor.dto.ProfessorResponse;
 import com.kakastudio.sms.professor.mapper.ProfessorMapper;
 import com.kakastudio.sms.professor.repository.ProfessorRepository;
 import com.kakastudio.sms.professor.service.ProfessorNumberGenerator;
-import com.kakastudio.sms.section.repository.SectionRepository;
+import com.kakastudio.sms.section.repository.CourseSectionRepository;
 import com.kakastudio.sms.security.dto.CurrentUser;
 import com.kakastudio.sms.security.service.CurrentUserProvider;
 import com.kakastudio.sms.semester.domain.SemesterStatus;
@@ -60,7 +60,7 @@ class ProfessorServiceImplTest {
       mock(TemporaryPasswordGenerator.class);
   private final EmailOutboxService outbox = mock(EmailOutboxService.class);
   private final CurrentUserProvider currentUser = mock(CurrentUserProvider.class);
-  private final SectionRepository sections = mock(SectionRepository.class);
+  private final CourseSectionRepository sections = mock(CourseSectionRepository.class);
   private final NotificationRepository notifications = mock(NotificationRepository.class);
   private final NotificationRecipientRepository recipients =
       mock(NotificationRecipientRepository.class);

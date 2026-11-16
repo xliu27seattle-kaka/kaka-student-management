@@ -2,8 +2,8 @@ package com.kakastudio.sms.professor.controller;
 
 import com.kakastudio.sms.professor.dto.ProfessorProfileResponse;
 import com.kakastudio.sms.professor.service.ProfessorDirectoryService;
-import com.kakastudio.sms.section.dto.SectionResponse;
-import com.kakastudio.sms.section.service.SectionService;
+import com.kakastudio.sms.section.dto.CourseSectionResponse;
+import com.kakastudio.sms.section.service.CourseSectionService;
 import java.util.List;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,10 +16,10 @@ import org.springframework.web.bind.annotation.RestController;
 public class ProfessorDirectoryController {
 
   private final ProfessorDirectoryService professorService;
-  private final SectionService sectionService;
+  private final CourseSectionService sectionService;
 
   public ProfessorDirectoryController(
-      ProfessorDirectoryService professorService, SectionService sectionService) {
+      ProfessorDirectoryService professorService, CourseSectionService sectionService) {
     this.professorService = professorService;
     this.sectionService = sectionService;
   }
@@ -36,7 +36,7 @@ public class ProfessorDirectoryController {
 
   /** What the professor teaches in semesters that are open or running. */
   @GetMapping("/{id}/sections")
-  public List<SectionResponse> sections(@PathVariable Long id) {
+  public List<CourseSectionResponse> sections(@PathVariable Long id) {
     professorService.profile(id); // same visibility as the profile: active professors only
     return sectionService.currentlyTaughtBy(id);
   }

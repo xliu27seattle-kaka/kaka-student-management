@@ -6,7 +6,7 @@ import com.kakastudio.sms.common.error.NotFoundException;
 import com.kakastudio.sms.common.error.RuleViolationException;
 import com.kakastudio.sms.enrollment.domain.EnrollmentStatus;
 import com.kakastudio.sms.enrollment.repository.EnrollmentRepository;
-import com.kakastudio.sms.section.repository.SectionRepository;
+import com.kakastudio.sms.section.repository.CourseSectionRepository;
 import com.kakastudio.sms.semester.domain.Semester;
 import com.kakastudio.sms.semester.domain.SemesterStatus;
 import com.kakastudio.sms.semester.dto.SemesterRequest;
@@ -23,14 +23,14 @@ import org.springframework.transaction.annotation.Transactional;
 public class SemesterServiceImpl implements SemesterService {
 
   private final SemesterRepository semesters;
-  private final SectionRepository sections;
+  private final CourseSectionRepository sections;
   private final EnrollmentRepository enrollments;
   private final SemesterLock semesterLock;
   private final Clock clock;
 
   public SemesterServiceImpl(
       SemesterRepository semesters,
-      SectionRepository sections,
+      CourseSectionRepository sections,
       EnrollmentRepository enrollments,
       SemesterLock semesterLock,
       Clock clock) {

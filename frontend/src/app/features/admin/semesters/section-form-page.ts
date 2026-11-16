@@ -9,7 +9,7 @@ import { ConfirmStore } from '../../../core/ui/confirm-store';
 import { ToastStore } from '../../../core/ui/toast-store';
 import { AdminApi } from '../../../shared/api/admin-api';
 import { CommonApi } from '../../../shared/api/common-api';
-import { DayOfWeek, Meeting, SectionDetail, Semester } from '../../../shared/api/models';
+import { DayOfWeek, Meeting, CourseSectionDetail, Semester } from '../../../shared/api/models';
 import { StatusBadge } from '../../../shared/ui/status-badge';
 import { short } from '../../../shared/ui/week-layout';
 
@@ -70,7 +70,7 @@ export class SectionFormPage implements OnInit, HasUnsavedChanges {
   });
 
   protected readonly semester$ = new BehaviorSubject<Semester | null>(null);
-  protected readonly detail$ = new BehaviorSubject<SectionDetail | null>(null);
+  protected readonly detail$ = new BehaviorSubject<CourseSectionDetail | null>(null);
   protected readonly error$ = new BehaviorSubject<string | null>(null);
   protected readonly saving$ = new BehaviorSubject(false);
   private saved = false;
@@ -90,7 +90,7 @@ export class SectionFormPage implements OnInit, HasUnsavedChanges {
     }
   }
 
-  private load(detail: SectionDetail): void {
+  private load(detail: CourseSectionDetail): void {
     const s = detail.section;
     this.detail$.next(detail);
     this.admin.semester(s.semesterId).subscribe((semester) => this.semester$.next(semester));
@@ -178,7 +178,7 @@ export class SectionFormPage implements OnInit, HasUnsavedChanges {
     });
   }
 
-  protected remove(detail: SectionDetail): void {
+  protected remove(detail: CourseSectionDetail): void {
     this.confirm
       .ask({
         title: `Delete ${detail.section.code}?`,

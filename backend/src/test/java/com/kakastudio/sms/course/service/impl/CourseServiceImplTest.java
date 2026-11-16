@@ -15,7 +15,7 @@ import com.kakastudio.sms.course.dto.CourseDetail;
 import com.kakastudio.sms.course.dto.CourseRequest;
 import com.kakastudio.sms.course.mapper.CourseMapper;
 import com.kakastudio.sms.course.repository.CourseRepository;
-import com.kakastudio.sms.section.repository.SectionRepository;
+import com.kakastudio.sms.section.repository.CourseSectionRepository;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,7 +25,7 @@ import org.springframework.http.HttpStatus;
 class CourseServiceImplTest {
 
   private final CourseRepository courses = mock(CourseRepository.class);
-  private final SectionRepository sections = mock(SectionRepository.class);
+  private final CourseSectionRepository sections = mock(CourseSectionRepository.class);
   private CourseServiceImpl service;
 
   private Course cs101;

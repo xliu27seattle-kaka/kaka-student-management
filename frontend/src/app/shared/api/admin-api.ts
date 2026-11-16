@@ -16,9 +16,9 @@ import {
   PersonRequest,
   Professor,
   ProfileRequest,
-  Section,
-  SectionDetail,
-  SectionRequest,
+  CourseSection,
+  CourseSectionDetail,
+  CourseSectionRequest,
   Semester,
   SemesterRequest,
   SemesterStatus,
@@ -163,24 +163,24 @@ export class AdminApi {
     return this.http.post<Semester>(`${ADMIN}/semesters/${id}/transition`, { target });
   }
 
-  sections(semesterId: number): Observable<Section[]> {
-    return this.http.get<Section[]>(`${ADMIN}/semesters/${semesterId}/sections`);
+  sections(semesterId: number): Observable<CourseSection[]> {
+    return this.http.get<CourseSection[]>(`${ADMIN}/semesters/${semesterId}/sections`);
   }
 
-  courseSections(courseId: number): Observable<Section[]> {
-    return this.http.get<Section[]>(`${ADMIN}/courses/${courseId}/sections`);
+  courseSections(courseId: number): Observable<CourseSection[]> {
+    return this.http.get<CourseSection[]>(`${ADMIN}/courses/${courseId}/sections`);
   }
 
-  section(id: number): Observable<SectionDetail> {
-    return this.http.get<SectionDetail>(`${ADMIN}/sections/${id}`);
+  section(id: number): Observable<CourseSectionDetail> {
+    return this.http.get<CourseSectionDetail>(`${ADMIN}/sections/${id}`);
   }
 
-  createSection(semesterId: number, request: SectionRequest): Observable<Section> {
-    return this.http.post<Section>(`${ADMIN}/semesters/${semesterId}/sections`, request);
+  createSection(semesterId: number, request: CourseSectionRequest): Observable<CourseSection> {
+    return this.http.post<CourseSection>(`${ADMIN}/semesters/${semesterId}/sections`, request);
   }
 
-  updateSection(id: number, request: SectionRequest): Observable<Section> {
-    return this.http.put<Section>(`${ADMIN}/sections/${id}`, request);
+  updateSection(id: number, request: CourseSectionRequest): Observable<CourseSection> {
+    return this.http.put<CourseSection>(`${ADMIN}/sections/${id}`, request);
   }
 
   deleteSection(id: number): Observable<void> {

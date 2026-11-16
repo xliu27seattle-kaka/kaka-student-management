@@ -31,8 +31,8 @@ import com.kakastudio.sms.notification.message.repository.NotificationRecipientR
 import com.kakastudio.sms.notification.message.repository.NotificationRepository;
 import com.kakastudio.sms.professor.domain.Professor;
 import com.kakastudio.sms.professor.repository.ProfessorRepository;
-import com.kakastudio.sms.section.domain.Section;
-import com.kakastudio.sms.section.repository.SectionRepository;
+import com.kakastudio.sms.section.domain.CourseSection;
+import com.kakastudio.sms.section.repository.CourseSectionRepository;
 import com.kakastudio.sms.semester.domain.SemesterStatus;
 import com.kakastudio.sms.testsupport.Users;
 import com.kakastudio.sms.user.domain.Role;
@@ -54,7 +54,7 @@ class NotificationServiceImplTest {
   private final NotificationRecipientRepository recipients =
       mock(NotificationRecipientRepository.class);
   private final UserRepository users = mock(UserRepository.class);
-  private final SectionRepository sections = mock(SectionRepository.class);
+  private final CourseSectionRepository sections = mock(CourseSectionRepository.class);
   private final EnrollmentRepository enrollments = mock(EnrollmentRepository.class);
   private final ProfessorRepository professors = mock(ProfessorRepository.class);
   private final EmailOutboxService outbox = mock(EmailOutboxService.class);
@@ -132,7 +132,7 @@ class NotificationServiceImplTest {
 
   @Test
   void aProfessorReachesTheStudentsEnrolledInTheirSection() {
-    Section cs101a =
+    CourseSection cs101a =
         section(
             10L,
             course(1L, "CS101", 3),
@@ -156,7 +156,7 @@ class NotificationServiceImplTest {
 
   @Test
   void aProfessorCannotWriteToAnotherProfessorsSection() {
-    Section theirs =
+    CourseSection theirs =
         section(
             10L,
             course(1L, "CS101", 3),

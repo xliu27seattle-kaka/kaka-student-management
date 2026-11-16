@@ -15,7 +15,7 @@ import com.kakastudio.sms.course.mapper.CourseMapper;
 import com.kakastudio.sms.course.repository.CourseRepository;
 import com.kakastudio.sms.course.repository.CourseSpecifications;
 import com.kakastudio.sms.course.service.CourseService;
-import com.kakastudio.sms.section.repository.SectionRepository;
+import com.kakastudio.sms.section.repository.CourseSectionRepository;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
@@ -29,11 +29,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class CourseServiceImpl implements CourseService {
 
   private final CourseRepository courses;
-  private final SectionRepository sections;
+  private final CourseSectionRepository sections;
   private final CourseMapper mapper;
 
   public CourseServiceImpl(
-      CourseRepository courses, SectionRepository sections, CourseMapper mapper) {
+      CourseRepository courses, CourseSectionRepository sections, CourseMapper mapper) {
     this.courses = courses;
     this.sections = sections;
     this.mapper = mapper;

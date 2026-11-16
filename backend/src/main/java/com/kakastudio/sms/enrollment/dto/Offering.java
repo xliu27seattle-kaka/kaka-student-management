@@ -1,7 +1,7 @@
 package com.kakastudio.sms.enrollment.dto;
 
 import com.kakastudio.sms.enrollment.domain.EnrollmentStatus;
-import com.kakastudio.sms.section.dto.SectionResponse;
+import com.kakastudio.sms.section.dto.CourseSectionResponse;
 import java.util.List;
 
 /**
@@ -11,7 +11,7 @@ import java.util.List;
  * @param myEnrollmentId the student's own row for this section, if they have one
  */
 public record Offering(
-    SectionResponse section,
+    CourseSectionResponse section,
     boolean available,
     List<ReasonDto> reasons,
     Long myEnrollmentId,

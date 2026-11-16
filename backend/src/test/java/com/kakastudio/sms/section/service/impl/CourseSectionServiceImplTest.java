@@ -25,12 +25,12 @@ import com.kakastudio.sms.notification.email.service.impl.HtmlEmailComposer;
 import com.kakastudio.sms.notification.message.service.SystemNotices;
 import com.kakastudio.sms.professor.domain.Professor;
 import com.kakastudio.sms.professor.repository.ProfessorRepository;
-import com.kakastudio.sms.section.domain.Section;
+import com.kakastudio.sms.section.domain.CourseSection;
+import com.kakastudio.sms.section.dto.CourseSectionRequest;
+import com.kakastudio.sms.section.dto.CourseSectionResponse;
 import com.kakastudio.sms.section.dto.MeetingRequest;
-import com.kakastudio.sms.section.dto.SectionRequest;
-import com.kakastudio.sms.section.dto.SectionResponse;
-import com.kakastudio.sms.section.mapper.SectionMapper;
-import com.kakastudio.sms.section.repository.SectionRepository;
+import com.kakastudio.sms.section.mapper.CourseSectionMapper;
+import com.kakastudio.sms.section.repository.CourseSectionRepository;
 import com.kakastudio.sms.semester.domain.Semester;
 import com.kakastudio.sms.semester.domain.SemesterStatus;
 import com.kakastudio.sms.semester.repository.SemesterRepository;
@@ -43,15 +43,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-class SectionServiceImplTest {
+class CourseSectionServiceImplTest {
 
-  private final SectionRepository sections = mock(SectionRepository.class);
+  private final CourseSectionRepository sections = mock(CourseSectionRepository.class);
   private final SemesterRepository semesters = mock(SemesterRepository.class);
   private final CourseRepository courses = mock(CourseRepository.class);
   private final ProfessorRepository professors = mock(ProfessorRepository.class);
   private final EnrollmentRepository enrollments = mock(EnrollmentRepository.class);
   private final SystemNotices notices = mock(SystemNotices.class);
-  private SectionServiceImpl service;
+  private CourseSectionServiceImpl service;
 
   private Course cs101;
   private Course cs201;
@@ -72,13 +72,13 @@ class SectionServiceImplTest {
     when(sections.findLetters(any(), any())).thenReturn(List.of());
     when(sections.findByProfessorIdAndSemesterId(any(), any())).thenReturn(List.of());
     service =
-        new SectionServiceImpl(
+        new CourseSectionServiceImpl(
             sections,
             semesters,
             courses,
             professors,
             enrollments,
-            new SectionMapper(),
+            new CourseSectionMapper(),
             new HtmlEmailComposer(),
             notices);
   }
@@ -87,15 +87,17 @@ class SectionServiceImplTest {
     return new MeetingRequest(day, LocalTime.parse(start), LocalTime.parse(end));
   }
 
-  private static SectionRequest request(Long courseId, Integer capacity, MeetingRequest... slots) {
-    return new SectionRequest(courseId, 1L, capacity, "Room 2", List.of(slots));
+  private static CourseSectionRequest request(
+      Long courseId, Integer capacity, MeetingRequest... slots) {
+    return new CourseSectionRequest(courseId, 1L, capacity, "Room 2", List.of(slots));
   }
 
   @Test
   void createsTheNextLetterWithTheCourseCredits() {
     when(sections.findLetters(2L, 5L)).thenReturn(List.of("A"));
 
-    SectionResponse created = service.create(5L, request(2L, null, slot(MONDAY, "10:00", "11:15")));
+    CourseSectionResponse created =
+        service.create(5L, request(2L, null, slot(MONDAY, "10:00", "11:15")));
 
     assertThat(created.letter()).isEqualTo("B");
     assertThat(created.code()).isEqualTo("CS201-B");
@@ -165,7 +167,8 @@ class SectionServiceImplTest {
 
   @Test
   void refusesAProfessorScheduleClashAndNamesTheSection() {
-    Section existing = section(9L, cs201, draft, okafor, "A", meeting(WEDNESDAY, "13:00", "14:15"));
+    CourseSection existing =
+        section(9L, cs201, draft, okafor, "A", meeting(WEDNESDAY, "13:00", "14:15"));
     when(sections.findByProfessorIdAndSemesterId(1L, 5L)).thenReturn(List.of(existing));
 
     ApiException error =
@@ -179,10 +182,11 @@ class SectionServiceImplTest {
 
   @Test
   void tenMinutesAfterAnotherClassIsFineForTheProfessor() {
-    Section existing = section(9L, cs201, draft, okafor, "A", meeting(WEDNESDAY, "13:00", "14:15"));
+    CourseSection existing =
+        section(9L, cs201, draft, okafor, "A", meeting(WEDNESDAY, "13:00", "14:15"));
     when(sections.findByProfessorIdAndSemesterId(1L, 5L)).thenReturn(List.of(existing));
 
-    SectionResponse created =
+    CourseSectionResponse created =
         service.create(5L, request(1L, 20, slot(WEDNESDAY, "14:25", "15:00")));
 
     assertThat(created.meetings()).hasSize(1);
@@ -190,12 +194,14 @@ class SectionServiceImplTest {
 
   @Test
   void onceEnrollmentIsOpenOnlyCapacityAndRoomChange() {
-    Section existing = section(9L, cs101, draft, okafor, "A", meeting(MONDAY, "10:00", "11:00"));
+    CourseSection existing =
+        section(9L, cs101, draft, okafor, "A", meeting(MONDAY, "10:00", "11:00"));
     draft.setStatus(SemesterStatus.READY);
     when(sections.findWithLockById(9L)).thenReturn(Optional.of(existing));
     when(enrollments.countBySectionIdAndStatus(9L, EnrollmentStatus.ENROLLED)).thenReturn(4L);
 
-    SectionResponse updated = service.update(9L, request(1L, 30, slot(MONDAY, "10:00", "11:00")));
+    CourseSectionResponse updated =
+        service.update(9L, request(1L, 30, slot(MONDAY, "10:00", "11:00")));
     assertThat(updated.capacity()).isEqualTo(30);
 
     ApiException error =
@@ -207,7 +213,8 @@ class SectionServiceImplTest {
 
   @Test
   void capacityCannotDropBelowTheNumberEnrolled() {
-    Section existing = section(9L, cs101, draft, okafor, "A", meeting(MONDAY, "10:00", "11:00"));
+    CourseSection existing =
+        section(9L, cs101, draft, okafor, "A", meeting(MONDAY, "10:00", "11:00"));
     draft.setStatus(SemesterStatus.READY);
     when(sections.findWithLockById(9L)).thenReturn(Optional.of(existing));
     when(enrollments.countBySectionIdAndStatus(9L, EnrollmentStatus.ENROLLED)).thenReturn(12L);
@@ -222,7 +229,8 @@ class SectionServiceImplTest {
 
   @Test
   void nothingChangesOnceTheSemesterStarted() {
-    Section existing = section(9L, cs101, draft, okafor, "A", meeting(MONDAY, "10:00", "11:00"));
+    CourseSection existing =
+        section(9L, cs101, draft, okafor, "A", meeting(MONDAY, "10:00", "11:00"));
     draft.setStatus(SemesterStatus.STARTED);
     when(sections.findWithLockById(9L)).thenReturn(Optional.of(existing));
 

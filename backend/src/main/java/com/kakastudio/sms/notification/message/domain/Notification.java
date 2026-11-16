@@ -1,6 +1,6 @@
 package com.kakastudio.sms.notification.message.domain;
 
-import com.kakastudio.sms.section.domain.Section;
+import com.kakastudio.sms.section.domain.CourseSection;
 import com.kakastudio.sms.user.domain.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -43,7 +43,7 @@ public class Notification {
   /** Set when the audience is one section. */
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "section_id")
-  private Section section;
+  private CourseSection section;
 
   @Column(nullable = false)
   private String subject;
@@ -60,7 +60,7 @@ public class Notification {
   public Notification(
       User sender,
       Audience audience,
-      Section section,
+      CourseSection section,
       String subject,
       String body,
       Instant createdAt) {

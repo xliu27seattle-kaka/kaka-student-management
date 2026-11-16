@@ -1,8 +1,8 @@
 package com.kakastudio.sms.enrollment.rules;
 
 import com.kakastudio.sms.enrollment.domain.Enrollment;
+import com.kakastudio.sms.section.domain.CourseSection;
 import com.kakastudio.sms.section.domain.MeetingTime;
-import com.kakastudio.sms.section.domain.Section;
 import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -19,9 +19,9 @@ public class ScheduleConflictRule implements EnrollmentRule {
 
   @Override
   public Optional<Ineligibility> check(EnrollmentContext context) {
-    Section target = context.section();
+    CourseSection target = context.section();
     for (Enrollment seat : context.otherActiveSeatsThisSemester()) {
-      Section other = seat.getSection();
+      CourseSection other = seat.getSection();
       Set<String> overlapDays = new LinkedHashSet<>();
       MeetingTime tooClose = null;
       MeetingTime tooCloseOther = null;

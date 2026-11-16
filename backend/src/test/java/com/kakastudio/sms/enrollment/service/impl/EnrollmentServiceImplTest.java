@@ -25,21 +25,21 @@ import com.kakastudio.sms.enrollment.domain.Enrollment;
 import com.kakastudio.sms.enrollment.domain.EnrollmentStatus;
 import com.kakastudio.sms.enrollment.dto.EnrollmentResponse;
 import com.kakastudio.sms.enrollment.dto.Offering;
+import com.kakastudio.sms.enrollment.repository.CourseSectionSeatCount;
 import com.kakastudio.sms.enrollment.repository.EnrollmentRepository;
-import com.kakastudio.sms.enrollment.repository.SectionSeatCount;
 import com.kakastudio.sms.enrollment.rules.CourseInProgressRule;
 import com.kakastudio.sms.enrollment.rules.CourseNotPassedRule;
 import com.kakastudio.sms.enrollment.rules.PrerequisitesRule;
 import com.kakastudio.sms.enrollment.rules.ScheduleConflictRule;
 import com.kakastudio.sms.enrollment.rules.SeatsAvailableRule;
 import com.kakastudio.sms.enrollment.rules.SemesterOpenRule;
-import com.kakastudio.sms.enrollment.rules.SingleSectionRule;
+import com.kakastudio.sms.enrollment.rules.SingleCourseSectionRule;
 import com.kakastudio.sms.enrollment.rules.StudentEligibleRule;
 import com.kakastudio.sms.grade.domain.StandardGradeScale;
 import com.kakastudio.sms.professor.domain.Professor;
-import com.kakastudio.sms.section.domain.Section;
-import com.kakastudio.sms.section.mapper.SectionMapper;
-import com.kakastudio.sms.section.repository.SectionRepository;
+import com.kakastudio.sms.section.domain.CourseSection;
+import com.kakastudio.sms.section.mapper.CourseSectionMapper;
+import com.kakastudio.sms.section.repository.CourseSectionRepository;
 import com.kakastudio.sms.semester.domain.Semester;
 import com.kakastudio.sms.semester.domain.SemesterStatus;
 import com.kakastudio.sms.semester.repository.SemesterRepository;
@@ -58,7 +58,7 @@ import org.mockito.InOrder;
 class EnrollmentServiceImplTest {
 
   private final StudentRepository students = mock(StudentRepository.class);
-  private final SectionRepository sections = mock(SectionRepository.class);
+  private final CourseSectionRepository sections = mock(CourseSectionRepository.class);
   private final SemesterRepository semesters = mock(SemesterRepository.class);
   private final EnrollmentRepository enrollments = mock(EnrollmentRepository.class);
   private final SemesterLock semesterLock = mock(SemesterLock.class);
@@ -70,11 +70,11 @@ class EnrollmentServiceImplTest {
   private final Course cs102 = course(2L, "CS102", 3);
   private final Course cs201 = course(3L, "CS201", 3, cs101);
   private final Student lena = student(1L);
-  private final Section cs101a =
+  private final CourseSection cs101a =
       section(10L, cs101, open, okafor, "A", meeting(MONDAY, "09:00", "10:00"));
-  private final Section cs102a =
+  private final CourseSection cs102a =
       section(11L, cs102, open, okafor, "A", meeting(TUESDAY, "09:00", "10:00"));
-  private final Section cs201a =
+  private final CourseSection cs201a =
       section(12L, cs201, open, okafor, "A", meeting(THURSDAY, "09:00", "10:00"));
 
   @BeforeEach
@@ -89,13 +89,13 @@ class EnrollmentServiceImplTest {
             List.of(
                 new SemesterOpenRule(),
                 new StudentEligibleRule(),
-                new SingleSectionRule(),
+                new SingleCourseSectionRule(),
                 new CourseNotPassedRule(scale),
                 new CourseInProgressRule(),
                 new PrerequisitesRule(scale),
                 new SeatsAvailableRule(),
                 new ScheduleConflictRule()),
-            new SectionMapper(),
+            new CourseSectionMapper(),
             semesterLock,
             Clock.fixed(Instant.parse("2026-11-14T10:00:00Z"), ZoneOffset.UTC));
     when(students.findById(1L)).thenReturn(Optional.of(lena));
@@ -110,8 +110,8 @@ class EnrollmentServiceImplTest {
     when(enrollments.save(any())).thenAnswer(call -> call.getArgument(0));
   }
 
-  private static SectionSeatCount seats(Long sectionId, long taken) {
-    return new SectionSeatCount(sectionId, taken);
+  private static CourseSectionSeatCount seats(Long sectionId, long taken) {
+    return new CourseSectionSeatCount(sectionId, taken);
   }
 
   @Test

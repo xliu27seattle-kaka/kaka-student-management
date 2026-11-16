@@ -4,8 +4,8 @@ import com.kakastudio.sms.course.domain.Course;
 import com.kakastudio.sms.enrollment.domain.Enrollment;
 import com.kakastudio.sms.enrollment.domain.EnrollmentStatus;
 import com.kakastudio.sms.professor.domain.Professor;
+import com.kakastudio.sms.section.domain.CourseSection;
 import com.kakastudio.sms.section.domain.MeetingTime;
-import com.kakastudio.sms.section.domain.Section;
 import com.kakastudio.sms.semester.domain.Semester;
 import com.kakastudio.sms.semester.domain.SemesterStatus;
 import com.kakastudio.sms.student.domain.Student;
@@ -65,21 +65,21 @@ public final class Catalog {
     return new MeetingTime(day, LocalTime.parse(start), LocalTime.parse(end));
   }
 
-  public static Section section(
+  public static CourseSection section(
       Long id,
       Course course,
       Semester semester,
       Professor professor,
       String letter,
       MeetingTime... meetings) {
-    Section section = new Section(course, semester, professor, letter, 20, "Room 101");
+    CourseSection section = new CourseSection(course, semester, professor, letter, 20, "Room 101");
     section.setId(id);
     section.replaceMeetings(List.of(meetings));
     return section;
   }
 
   public static Enrollment enrollment(
-      Long id, Student student, Section section, EnrollmentStatus status, Integer score) {
+      Long id, Student student, CourseSection section, EnrollmentStatus status, Integer score) {
     Enrollment enrollment = new Enrollment(student, section);
     enrollment.setId(id);
     enrollment.setStatus(status);
@@ -88,7 +88,7 @@ public final class Catalog {
   }
 
   public static Enrollment graded(
-      Long id, Student student, Section section, int score, String letter, String points) {
+      Long id, Student student, CourseSection section, int score, String letter, String points) {
     Enrollment enrollment = enrollment(id, student, section, EnrollmentStatus.COMPLETED, score);
     enrollment.setLetterGrade(letter);
     enrollment.setGradePoints(new BigDecimal(points));

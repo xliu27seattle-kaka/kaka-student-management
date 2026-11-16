@@ -1,9 +1,9 @@
 package com.kakastudio.sms.section.controller;
 
-import com.kakastudio.sms.section.dto.SectionDetail;
-import com.kakastudio.sms.section.dto.SectionRequest;
-import com.kakastudio.sms.section.dto.SectionResponse;
-import com.kakastudio.sms.section.service.SectionService;
+import com.kakastudio.sms.section.dto.CourseSectionDetail;
+import com.kakastudio.sms.section.dto.CourseSectionRequest;
+import com.kakastudio.sms.section.dto.CourseSectionResponse;
+import com.kakastudio.sms.section.service.CourseSectionService;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
@@ -19,38 +19,39 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/admin")
-public class AdminSectionController {
+public class AdminCourseSectionController {
 
-  private final SectionService sectionService;
+  private final CourseSectionService sectionService;
 
-  public AdminSectionController(SectionService sectionService) {
+  public AdminCourseSectionController(CourseSectionService sectionService) {
     this.sectionService = sectionService;
   }
 
   @GetMapping("/semesters/{semesterId}/sections")
-  public List<SectionResponse> list(@PathVariable Long semesterId) {
+  public List<CourseSectionResponse> list(@PathVariable Long semesterId) {
     return sectionService.listForSemester(semesterId);
   }
 
   @GetMapping("/courses/{courseId}/sections")
-  public List<SectionResponse> listForCourse(@PathVariable Long courseId) {
+  public List<CourseSectionResponse> listForCourse(@PathVariable Long courseId) {
     return sectionService.listForCourse(courseId);
   }
 
   @PostMapping("/semesters/{semesterId}/sections")
   @ResponseStatus(HttpStatus.CREATED)
-  public SectionResponse create(
-      @PathVariable Long semesterId, @Valid @RequestBody SectionRequest request) {
+  public CourseSectionResponse create(
+      @PathVariable Long semesterId, @Valid @RequestBody CourseSectionRequest request) {
     return sectionService.create(semesterId, request);
   }
 
   @GetMapping("/sections/{id}")
-  public SectionDetail get(@PathVariable Long id) {
+  public CourseSectionDetail get(@PathVariable Long id) {
     return sectionService.get(id);
   }
 
   @PutMapping("/sections/{id}")
-  public SectionResponse update(@PathVariable Long id, @Valid @RequestBody SectionRequest request) {
+  public CourseSectionResponse update(
+      @PathVariable Long id, @Valid @RequestBody CourseSectionRequest request) {
     return sectionService.update(id, request);
   }
 

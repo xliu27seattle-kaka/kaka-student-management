@@ -1,21 +1,21 @@
 package com.kakastudio.sms.section.mapper;
 
 import com.kakastudio.sms.enrollment.domain.Enrollment;
+import com.kakastudio.sms.section.domain.CourseSection;
 import com.kakastudio.sms.section.domain.MeetingTime;
-import com.kakastudio.sms.section.domain.Section;
+import com.kakastudio.sms.section.dto.CourseSectionDetail;
+import com.kakastudio.sms.section.dto.CourseSectionResponse;
 import com.kakastudio.sms.section.dto.MeetingDto;
 import com.kakastudio.sms.section.dto.RosterEntry;
-import com.kakastudio.sms.section.dto.SectionDetail;
-import com.kakastudio.sms.section.dto.SectionResponse;
 import com.kakastudio.sms.user.domain.User;
 import java.util.List;
 import org.springframework.stereotype.Component;
 
 @Component
-public class SectionMapper {
+public class CourseSectionMapper {
 
-  public SectionResponse toResponse(Section section, long enrolledCount) {
-    return new SectionResponse(
+  public CourseSectionResponse toResponse(CourseSection section, long enrolledCount) {
+    return new CourseSectionResponse(
         section.getId(),
         section.code(),
         section.getLetter(),
@@ -32,11 +32,12 @@ public class SectionMapper {
         section.getCapacity(),
         enrolledCount,
         section.getRoom(),
-        section.getMeetings().stream().map(SectionMapper::toDto).toList());
+        section.getMeetings().stream().map(CourseSectionMapper::toDto).toList());
   }
 
-  public SectionDetail toDetail(Section section, List<Enrollment> roster, long enrolledCount) {
-    return new SectionDetail(
+  public CourseSectionDetail toDetail(
+      CourseSection section, List<Enrollment> roster, long enrolledCount) {
+    return new CourseSectionDetail(
         toResponse(section, enrolledCount), roster.stream().map(this::toRosterEntry).toList());
   }
 

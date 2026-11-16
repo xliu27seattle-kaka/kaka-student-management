@@ -26,8 +26,8 @@ import com.kakastudio.sms.notification.message.repository.NotificationRepository
 import com.kakastudio.sms.notification.message.service.NotificationService;
 import com.kakastudio.sms.professor.domain.Professor;
 import com.kakastudio.sms.professor.repository.ProfessorRepository;
-import com.kakastudio.sms.section.domain.Section;
-import com.kakastudio.sms.section.repository.SectionRepository;
+import com.kakastudio.sms.section.domain.CourseSection;
+import com.kakastudio.sms.section.repository.CourseSectionRepository;
 import com.kakastudio.sms.user.domain.Role;
 import com.kakastudio.sms.user.domain.User;
 import com.kakastudio.sms.user.domain.UserStatus;
@@ -52,7 +52,7 @@ public class NotificationServiceImpl implements NotificationService {
   private final NotificationRepository notifications;
   private final NotificationRecipientRepository recipients;
   private final UserRepository users;
-  private final SectionRepository sections;
+  private final CourseSectionRepository sections;
   private final EnrollmentRepository enrollments;
   private final ProfessorRepository professors;
   private final EmailComposer emails;
@@ -63,7 +63,7 @@ public class NotificationServiceImpl implements NotificationService {
       NotificationRepository notifications,
       NotificationRecipientRepository recipients,
       UserRepository users,
-      SectionRepository sections,
+      CourseSectionRepository sections,
       EnrollmentRepository enrollments,
       ProfessorRepository professors,
       EmailComposer emails,
@@ -117,7 +117,7 @@ public class NotificationServiceImpl implements NotificationService {
             .findByUserId(professorUserId)
             .orElseThrow(
                 () -> new NotFoundException(ErrorCode.PROFESSOR_NOT_FOUND, "Professor not found"));
-    Section section =
+    CourseSection section =
         sections
             .findById(sectionId)
             .orElseThrow(
@@ -140,7 +140,12 @@ public class NotificationServiceImpl implements NotificationService {
   }
 
   private SentNotification send(
-      User sender, Audience audience, Section section, String subject, String body, List<User> to) {
+      User sender,
+      Audience audience,
+      CourseSection section,
+      String subject,
+      String body,
+      List<User> to) {
     if (to.isEmpty()) {
       throw new RuleViolationException(
           ErrorCode.NO_RECIPIENTS, "Nobody would receive this notification");

@@ -21,9 +21,9 @@ import com.kakastudio.sms.grade.domain.StandardGradeScale;
 import com.kakastudio.sms.grade.dto.GradeEntry;
 import com.kakastudio.sms.professor.domain.Professor;
 import com.kakastudio.sms.professor.repository.ProfessorRepository;
-import com.kakastudio.sms.section.domain.Section;
-import com.kakastudio.sms.section.mapper.SectionMapper;
-import com.kakastudio.sms.section.repository.SectionRepository;
+import com.kakastudio.sms.section.domain.CourseSection;
+import com.kakastudio.sms.section.mapper.CourseSectionMapper;
+import com.kakastudio.sms.section.repository.CourseSectionRepository;
 import com.kakastudio.sms.semester.domain.Semester;
 import com.kakastudio.sms.semester.domain.SemesterStatus;
 import com.kakastudio.sms.semester.service.SemesterLock;
@@ -35,7 +35,7 @@ import org.springframework.http.HttpStatus;
 
 class GradingServiceImplTest {
 
-  private final SectionRepository sections = mock(SectionRepository.class);
+  private final CourseSectionRepository sections = mock(CourseSectionRepository.class);
   private final EnrollmentRepository enrollments = mock(EnrollmentRepository.class);
   private final ProfessorRepository professors = mock(ProfessorRepository.class);
   private final SemesterLock semesterLock = mock(SemesterLock.class);
@@ -43,7 +43,7 @@ class GradingServiceImplTest {
 
   private final Professor okafor = professor(1L, "Okafor");
   private final Semester term = semester(2L, "2026FA", SemesterStatus.STARTED);
-  private final Section cs101a = section(10L, course(1L, "CS101", 3), term, okafor, "A");
+  private final CourseSection cs101a = section(10L, course(1L, "CS101", 3), term, okafor, "A");
   private final Enrollment lena =
       enrollment(7L, student(1L), cs101a, EnrollmentStatus.ENROLLED, null);
   private final Long okaforUserId = okafor.getUser().getId();
@@ -56,7 +56,7 @@ class GradingServiceImplTest {
             enrollments,
             professors,
             new StandardGradeScale(),
-            new SectionMapper(),
+            new CourseSectionMapper(),
             semesterLock);
     when(professors.findByUserId(okaforUserId)).thenReturn(Optional.of(okafor));
     when(sections.findById(10L)).thenReturn(Optional.of(cs101a));
@@ -126,7 +126,7 @@ class GradingServiceImplTest {
 
   @Test
   void refusesAnEnrollmentOfAnotherSection() {
-    Section other = section(11L, course(2L, "CS102", 3), term, okafor, "A");
+    CourseSection other = section(11L, course(2L, "CS102", 3), term, okafor, "A");
     Enrollment elsewhere = enrollment(8L, student(2L), other, EnrollmentStatus.ENROLLED, null);
     when(enrollments.findById(8L)).thenReturn(Optional.of(elsewhere));
 

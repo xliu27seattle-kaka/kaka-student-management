@@ -2,8 +2,8 @@ package com.kakastudio.sms.grade.controller;
 
 import com.kakastudio.sms.grade.dto.GradesRequest;
 import com.kakastudio.sms.grade.service.GradingService;
-import com.kakastudio.sms.section.dto.SectionDetail;
-import com.kakastudio.sms.section.dto.SectionResponse;
+import com.kakastudio.sms.section.dto.CourseSectionDetail;
+import com.kakastudio.sms.section.dto.CourseSectionResponse;
 import com.kakastudio.sms.security.service.CurrentUserProvider;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -30,17 +30,18 @@ public class ProfessorTeachingController {
   }
 
   @GetMapping
-  public List<SectionResponse> mySections(@RequestParam(required = false) Long semesterId) {
+  public List<CourseSectionResponse> mySections(@RequestParam(required = false) Long semesterId) {
     return gradingService.mySections(currentUser.require().id(), semesterId);
   }
 
   @GetMapping("/{id}")
-  public SectionDetail mySection(@PathVariable Long id) {
+  public CourseSectionDetail mySection(@PathVariable Long id) {
     return gradingService.mySection(currentUser.require().id(), id);
   }
 
   @PutMapping("/{id}/grades")
-  public SectionDetail grade(@PathVariable Long id, @Valid @RequestBody GradesRequest request) {
+  public CourseSectionDetail grade(
+      @PathVariable Long id, @Valid @RequestBody GradesRequest request) {
     return gradingService.grade(currentUser.require().id(), id, request.grades());
   }
 }

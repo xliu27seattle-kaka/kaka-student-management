@@ -5,8 +5,8 @@ import { params } from './admin-api';
 import {
   ProfessorProfile,
   ProfileRequest,
-  Section,
-  SectionDetail,
+  CourseSection,
+  CourseSectionDetail,
   SentNotification,
 } from './models';
 
@@ -17,19 +17,21 @@ const PROFESSOR = '/api/v1/professor';
 export class ProfessorApi {
   private readonly http = inject(HttpClient);
 
-  sections(semesterId?: number): Observable<Section[]> {
-    return this.http.get<Section[]>(`${PROFESSOR}/sections`, { params: params({ semesterId }) });
+  sections(semesterId?: number): Observable<CourseSection[]> {
+    return this.http.get<CourseSection[]>(`${PROFESSOR}/sections`, {
+      params: params({ semesterId }),
+    });
   }
 
-  section(id: number): Observable<SectionDetail> {
-    return this.http.get<SectionDetail>(`${PROFESSOR}/sections/${id}`);
+  section(id: number): Observable<CourseSectionDetail> {
+    return this.http.get<CourseSectionDetail>(`${PROFESSOR}/sections/${id}`);
   }
 
   saveGrades(
     id: number,
     grades: { enrollmentId: number; score: number | null }[],
-  ): Observable<SectionDetail> {
-    return this.http.put<SectionDetail>(`${PROFESSOR}/sections/${id}/grades`, { grades });
+  ): Observable<CourseSectionDetail> {
+    return this.http.put<CourseSectionDetail>(`${PROFESSOR}/sections/${id}/grades`, { grades });
   }
 
   notifySection(id: number, subject: string, body: string): Observable<SentNotification> {

@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 /** One section per course per semester (and not the same section twice). */
 @Component
 @Order(30)
-public class SingleSectionRule implements EnrollmentRule {
+public class SingleCourseSectionRule implements EnrollmentRule {
 
   @Override
   public Optional<Ineligibility> check(EnrollmentContext context) {

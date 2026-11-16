@@ -3,7 +3,7 @@ package com.kakastudio.sms.section.dto;
 import com.kakastudio.sms.semester.domain.SemesterStatus;
 import java.util.List;
 
-public record SectionResponse(
+public record CourseSectionResponse(
     Long id,
     String code,
     String letter,

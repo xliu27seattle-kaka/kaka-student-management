@@ -9,7 +9,7 @@ import { ConfirmStore } from '../../../core/ui/confirm-store';
 import { ToastStore } from '../../../core/ui/toast-store';
 import { AdminApi } from '../../../shared/api/admin-api';
 import { CommonApi } from '../../../shared/api/common-api';
-import { CourseDetail, Section } from '../../../shared/api/models';
+import { CourseDetail, CourseSection } from '../../../shared/api/models';
 import { EmptyState } from '../../../shared/ui/empty-state';
 import { SkeletonRows } from '../../../shared/ui/skeleton-rows';
 import { StatusBadge } from '../../../shared/ui/status-badge';
@@ -51,7 +51,7 @@ export class CourseDetailPage {
     switchMap(([id]) => toLoadState(this.api.courseSections(Number(id)))),
   );
 
-  protected summary(section: Section): string {
+  protected summary(section: CourseSection): string {
     return meetingSummary(section.meetings);
   }
 

@@ -20,8 +20,8 @@ import com.kakastudio.sms.professor.service.ProfessorAdminService;
 import com.kakastudio.sms.professor.service.ProfessorDirectoryService;
 import com.kakastudio.sms.professor.service.ProfessorNumberGenerator;
 import com.kakastudio.sms.professor.service.ProfessorProfileService;
-import com.kakastudio.sms.section.domain.Section;
-import com.kakastudio.sms.section.repository.SectionRepository;
+import com.kakastudio.sms.section.domain.CourseSection;
+import com.kakastudio.sms.section.repository.CourseSectionRepository;
 import com.kakastudio.sms.security.service.CurrentUserProvider;
 import com.kakastudio.sms.semester.domain.SemesterStatus;
 import com.kakastudio.sms.student.service.impl.StudentServiceImpl;
@@ -53,7 +53,7 @@ public class ProfessorServiceImpl
   private final SystemNotices notices;
   private final ProfessorMapper mapper;
   private final CurrentUserProvider currentUser;
-  private final SectionRepository sections;
+  private final CourseSectionRepository sections;
 
   public ProfessorServiceImpl(
       ProfessorRepository professors,
@@ -64,7 +64,7 @@ public class ProfessorServiceImpl
       SystemNotices notices,
       ProfessorMapper mapper,
       CurrentUserProvider currentUser,
-      SectionRepository sections) {
+      CourseSectionRepository sections) {
     this.professors = professors;
     this.accounts = accounts;
     this.numbers = numbers;
@@ -135,7 +135,7 @@ public class ProfessorServiceImpl
             .findByProfessorAndSemesterStatuses(
                 id, EnumSet.of(SemesterStatus.READY, SemesterStatus.STARTED))
             .stream()
-            .map(Section::code)
+            .map(CourseSection::code)
             .toList();
     if (!teaching.isEmpty()) {
       throw new ConflictException(

@@ -8,15 +8,15 @@ import com.kakastudio.sms.enrollment.domain.EnrollmentStatus;
 import com.kakastudio.sms.enrollment.dto.EnrollmentResponse;
 import com.kakastudio.sms.enrollment.dto.Offering;
 import com.kakastudio.sms.enrollment.dto.ReasonDto;
+import com.kakastudio.sms.enrollment.repository.CourseSectionSeatCount;
 import com.kakastudio.sms.enrollment.repository.EnrollmentRepository;
-import com.kakastudio.sms.enrollment.repository.SectionSeatCount;
 import com.kakastudio.sms.enrollment.rules.EnrollmentContext;
 import com.kakastudio.sms.enrollment.rules.EnrollmentRule;
 import com.kakastudio.sms.enrollment.rules.Ineligibility;
 import com.kakastudio.sms.enrollment.service.EnrollmentService;
-import com.kakastudio.sms.section.domain.Section;
-import com.kakastudio.sms.section.mapper.SectionMapper;
-import com.kakastudio.sms.section.repository.SectionRepository;
+import com.kakastudio.sms.section.domain.CourseSection;
+import com.kakastudio.sms.section.mapper.CourseSectionMapper;
+import com.kakastudio.sms.section.repository.CourseSectionRepository;
 import com.kakastudio.sms.semester.domain.Semester;
 import com.kakastudio.sms.semester.domain.SemesterStatus;
 import com.kakastudio.sms.semester.repository.SemesterRepository;
@@ -37,21 +37,21 @@ import org.springframework.transaction.annotation.Transactional;
 public class EnrollmentServiceImpl implements EnrollmentService {
 
   private final StudentRepository students;
-  private final SectionRepository sections;
+  private final CourseSectionRepository sections;
   private final SemesterRepository semesters;
   private final EnrollmentRepository enrollments;
   private final List<EnrollmentRule> rules;
-  private final SectionMapper sectionMapper;
+  private final CourseSectionMapper sectionMapper;
   private final SemesterLock semesterLock;
   private final Clock clock;
 
   public EnrollmentServiceImpl(
       StudentRepository students,
-      SectionRepository sections,
+      CourseSectionRepository sections,
       SemesterRepository semesters,
       EnrollmentRepository enrollments,
       List<EnrollmentRule> rules,
-      SectionMapper sectionMapper,
+      CourseSectionMapper sectionMapper,
       SemesterLock semesterLock,
       Clock clock) {
     this.students = students;
@@ -76,7 +76,8 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 () -> new NotFoundException(ErrorCode.SEMESTER_NOT_FOUND, "Semester not found"));
     Map<Long, Long> taken =
         enrollments.countSeatsTaken(semester.getId(), EnrollmentStatus.ENROLLED).stream()
-            .collect(Collectors.toMap(SectionSeatCount::sectionId, SectionSeatCount::taken));
+            .collect(
+                Collectors.toMap(CourseSectionSeatCount::sectionId, CourseSectionSeatCount::taken));
     List<Enrollment> history = enrollments.findHistory(studentId);
     Map<Long, Enrollment> mine =
         history.stream()
@@ -126,7 +127,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             .findWithLockById(studentId)
             .orElseThrow(
                 () -> new NotFoundException(ErrorCode.STUDENT_NOT_FOUND, "Student not found"));
-    Section section =
+    CourseSection section =
         sections
             .findWithLockById(sectionId)
             .orElseThrow(
@@ -186,7 +187,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
   }
 
   private EnrollmentResponse toResponse(Enrollment enrollment) {
-    Section section = enrollment.getSection();
+    CourseSection section = enrollment.getSection();
     long seats = enrollments.countBySectionIdAndStatus(section.getId(), EnrollmentStatus.ENROLLED);
     return new EnrollmentResponse(
         enrollment.getId(),

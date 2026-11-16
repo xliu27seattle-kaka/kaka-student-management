@@ -8,7 +8,7 @@ import com.kakastudio.sms.enrollment.repository.EnrollmentRepository;
 import com.kakastudio.sms.grade.domain.GpaCalculator;
 import com.kakastudio.sms.grade.domain.GradeScale;
 import com.kakastudio.sms.grade.domain.GradedCredit;
-import com.kakastudio.sms.section.domain.Section;
+import com.kakastudio.sms.section.domain.CourseSection;
 import com.kakastudio.sms.semester.domain.Semester;
 import com.kakastudio.sms.student.domain.AcademicStatus;
 import com.kakastudio.sms.student.domain.Student;
@@ -104,7 +104,7 @@ public class TranscriptServiceImpl implements TranscriptService {
   }
 
   private static TranscriptRow row(Enrollment e) {
-    Section section = e.getSection();
+    CourseSection section = e.getSection();
     RowStatus status =
         switch (e.getStatus()) {
           case COMPLETED -> RowStatus.GRADED;

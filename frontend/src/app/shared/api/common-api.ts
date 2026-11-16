@@ -8,7 +8,7 @@ import {
   InboxItem,
   Page,
   ProfessorProfile,
-  Section,
+  CourseSection,
   Semester,
 } from './models';
 
@@ -44,8 +44,8 @@ export class CommonApi {
     return this.http.get<ProfessorProfile>(`/api/v1/professors/${id}`);
   }
 
-  professorSections(id: number): Observable<Section[]> {
-    return this.http.get<Section[]>(`/api/v1/professors/${id}/sections`);
+  professorSections(id: number): Observable<CourseSection[]> {
+    return this.http.get<CourseSection[]>(`/api/v1/professors/${id}/sections`);
   }
 
   unreadCount(): Observable<{ unread: number }> {

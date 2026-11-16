@@ -18,7 +18,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/** A course in the catalogue, such as CS201. What is taught, not when: see {@code Section}. */
+/**
+ * A course in the catalogue, such as CS201. What is taught, not when: see {@code CourseSection}.
+ */
 @Entity
 @Table(name = "courses")
 @Getter

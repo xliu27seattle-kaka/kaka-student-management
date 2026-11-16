@@ -1,6 +1,6 @@
 package com.kakastudio.sms.enrollment.domain;
 
-import com.kakastudio.sms.section.domain.Section;
+import com.kakastudio.sms.section.domain.CourseSection;
 import com.kakastudio.sms.student.domain.Student;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -40,7 +40,7 @@ public class Enrollment {
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "section_id", nullable = false)
-  private Section section;
+  private CourseSection section;
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
@@ -61,7 +61,7 @@ public class Enrollment {
   @Column(name = "updated_at", nullable = false)
   private Instant updatedAt;
 
-  public Enrollment(Student student, Section section) {
+  public Enrollment(Student student, CourseSection section) {
     this.student = student;
     this.section = section;
   }

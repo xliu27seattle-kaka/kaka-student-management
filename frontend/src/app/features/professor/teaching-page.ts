@@ -5,7 +5,7 @@ import { map } from 'rxjs';
 import { toLoadState } from '../../core/api/load-state';
 import { AuthStore } from '../../core/auth/auth-store';
 import { ProfessorApi } from '../../shared/api/professor-api';
-import { Section } from '../../shared/api/models';
+import { CourseSection } from '../../shared/api/models';
 import { EmptyState } from '../../shared/ui/empty-state';
 import { ScheduleGrid } from '../../shared/ui/schedule-grid';
 import { SkeletonRows } from '../../shared/ui/skeleton-rows';
@@ -14,8 +14,8 @@ import { ScheduleEntry, meetingSummary } from '../../shared/ui/week-layout';
 
 interface TermGroup {
   name: string;
-  status: Section['semesterStatus'];
-  sections: Section[];
+  status: CourseSection['semesterStatus'];
+  sections: CourseSection[];
 }
 
 /** What the professor teaches, semester by semester, with this term's week at a glance. */
@@ -149,12 +149,12 @@ export class TeachingPage {
       .pipe(map((sections) => ({ terms: groupByTerm(sections), week: thisWeek(sections) }))),
   );
 
-  protected summary(section: Section): string {
+  protected summary(section: CourseSection): string {
     return meetingSummary(section.meetings);
   }
 }
 
-function groupByTerm(sections: Section[]): TermGroup[] {
+function groupByTerm(sections: CourseSection[]): TermGroup[] {
   const groups = new Map<string, TermGroup>();
   for (const s of sections) {
     const group = groups.get(s.semesterName) ?? {
@@ -169,7 +169,7 @@ function groupByTerm(sections: Section[]): TermGroup[] {
 }
 
 /** The running semester's classes, or the open one's if nothing runs yet. */
-function thisWeek(sections: Section[]): ScheduleEntry[] {
+function thisWeek(sections: CourseSection[]): ScheduleEntry[] {
   const running = sections.filter((s) => s.semesterStatus === 'STARTED');
   const current = running.length ? running : sections.filter((s) => s.semesterStatus === 'READY');
   return current.map((s) => ({

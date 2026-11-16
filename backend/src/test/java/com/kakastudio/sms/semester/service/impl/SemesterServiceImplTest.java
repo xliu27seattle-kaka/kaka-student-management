@@ -14,7 +14,7 @@ import com.kakastudio.sms.common.error.ApiException;
 import com.kakastudio.sms.common.error.ErrorCode;
 import com.kakastudio.sms.enrollment.domain.EnrollmentStatus;
 import com.kakastudio.sms.enrollment.repository.EnrollmentRepository;
-import com.kakastudio.sms.section.repository.SectionRepository;
+import com.kakastudio.sms.section.repository.CourseSectionRepository;
 import com.kakastudio.sms.semester.domain.Semester;
 import com.kakastudio.sms.semester.domain.SemesterStatus;
 import com.kakastudio.sms.semester.dto.SemesterRequest;
@@ -33,7 +33,7 @@ import org.junit.jupiter.api.Test;
 class SemesterServiceImplTest {
 
   private final SemesterRepository semesters = mock(SemesterRepository.class);
-  private final SectionRepository sections = mock(SectionRepository.class);
+  private final CourseSectionRepository sections = mock(CourseSectionRepository.class);
   private final EnrollmentRepository enrollments = mock(EnrollmentRepository.class);
   private final SemesterLock semesterLock = mock(SemesterLock.class);
   private SemesterServiceImpl service;

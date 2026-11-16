@@ -6,21 +6,21 @@ import com.kakastudio.sms.common.error.RuleViolationException;
 import com.kakastudio.sms.course.domain.Course;
 import com.kakastudio.sms.course.repository.CourseRepository;
 import com.kakastudio.sms.enrollment.domain.EnrollmentStatus;
+import com.kakastudio.sms.enrollment.repository.CourseSectionSeatCount;
 import com.kakastudio.sms.enrollment.repository.EnrollmentRepository;
-import com.kakastudio.sms.enrollment.repository.SectionSeatCount;
 import com.kakastudio.sms.notification.email.service.EmailComposer;
 import com.kakastudio.sms.notification.message.service.SystemNotices;
 import com.kakastudio.sms.professor.domain.Professor;
 import com.kakastudio.sms.professor.repository.ProfessorRepository;
+import com.kakastudio.sms.section.domain.CourseSection;
 import com.kakastudio.sms.section.domain.MeetingTime;
-import com.kakastudio.sms.section.domain.Section;
+import com.kakastudio.sms.section.dto.CourseSectionDetail;
+import com.kakastudio.sms.section.dto.CourseSectionRequest;
+import com.kakastudio.sms.section.dto.CourseSectionResponse;
 import com.kakastudio.sms.section.dto.MeetingRequest;
-import com.kakastudio.sms.section.dto.SectionDetail;
-import com.kakastudio.sms.section.dto.SectionRequest;
-import com.kakastudio.sms.section.dto.SectionResponse;
-import com.kakastudio.sms.section.mapper.SectionMapper;
-import com.kakastudio.sms.section.repository.SectionRepository;
-import com.kakastudio.sms.section.service.SectionService;
+import com.kakastudio.sms.section.mapper.CourseSectionMapper;
+import com.kakastudio.sms.section.repository.CourseSectionRepository;
+import com.kakastudio.sms.section.service.CourseSectionService;
 import com.kakastudio.sms.semester.domain.Semester;
 import com.kakastudio.sms.semester.domain.SemesterStatus;
 import com.kakastudio.sms.semester.repository.SemesterRepository;
@@ -34,24 +34,24 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class SectionServiceImpl implements SectionService {
+public class CourseSectionServiceImpl implements CourseSectionService {
 
-  private final SectionRepository sections;
+  private final CourseSectionRepository sections;
   private final SemesterRepository semesters;
   private final CourseRepository courses;
   private final ProfessorRepository professors;
   private final EnrollmentRepository enrollments;
-  private final SectionMapper mapper;
+  private final CourseSectionMapper mapper;
   private final EmailComposer emails;
   private final SystemNotices notices;
 
-  public SectionServiceImpl(
-      SectionRepository sections,
+  public CourseSectionServiceImpl(
+      CourseSectionRepository sections,
       SemesterRepository semesters,
       CourseRepository courses,
       ProfessorRepository professors,
       EnrollmentRepository enrollments,
-      SectionMapper mapper,
+      CourseSectionMapper mapper,
       EmailComposer emails,
       SystemNotices notices) {
     this.sections = sections;
@@ -66,10 +66,11 @@ public class SectionServiceImpl implements SectionService {
 
   @Override
   @Transactional(readOnly = true)
-  public List<SectionResponse> listForSemester(Long semesterId) {
+  public List<CourseSectionResponse> listForSemester(Long semesterId) {
     Map<Long, Long> taken =
         enrollments.countSeatsTaken(semesterId, EnrollmentStatus.ENROLLED).stream()
-            .collect(Collectors.toMap(SectionSeatCount::sectionId, SectionSeatCount::taken));
+            .collect(
+                Collectors.toMap(CourseSectionSeatCount::sectionId, CourseSectionSeatCount::taken));
     return sections.findBySemesterId(semesterId).stream()
         .map(section -> mapper.toResponse(section, taken.getOrDefault(section.getId(), 0L)))
         .toList();
@@ -77,7 +78,7 @@ public class SectionServiceImpl implements SectionService {
 
   @Override
   @Transactional(readOnly = true)
-  public List<SectionResponse> listForCourse(Long courseId) {
+  public List<CourseSectionResponse> listForCourse(Long courseId) {
     return sections.findByCourse(courseId).stream()
         .map(section -> mapper.toResponse(section, enrolled(section.getId())))
         .toList();
@@ -85,14 +86,14 @@ public class SectionServiceImpl implements SectionService {
 
   @Override
   @Transactional(readOnly = true)
-  public SectionDetail get(Long id) {
-    Section section = find(id);
+  public CourseSectionDetail get(Long id) {
+    CourseSection section = find(id);
     return mapper.toDetail(section, enrollments.findRoster(id), enrolled(id));
   }
 
   @Override
   @Transactional
-  public SectionResponse create(Long semesterId, SectionRequest request) {
+  public CourseSectionResponse create(Long semesterId, CourseSectionRequest request) {
     Semester semester =
         semesters
             .findById(semesterId)
@@ -105,25 +106,25 @@ public class SectionServiceImpl implements SectionService {
     Professor professor = activeProfessor(request.professorId());
     List<MeetingTime> meetings = meetings(request.meetings());
     checkProfessorIsFree(professor, semester, meetings, null);
-    Section section =
-        new Section(
+    CourseSection section =
+        new CourseSection(
             course,
             semester,
             professor,
             nextLetter(course.getId(), semesterId),
-            Objects.requireNonNullElse(request.capacity(), Section.DEFAULT_CAPACITY),
+            Objects.requireNonNullElse(request.capacity(), CourseSection.DEFAULT_CAPACITY),
             request.room());
     section.replaceMeetings(meetings);
-    Section saved = sections.save(section);
+    CourseSection saved = sections.save(section);
     tellProfessor(saved);
     return mapper.toResponse(saved, 0);
   }
 
   @Override
   @Transactional
-  public SectionResponse update(Long id, SectionRequest request) {
+  public CourseSectionResponse update(Long id, CourseSectionRequest request) {
     // locked as enrolling does, so capacity cannot drop below a seat being taken right now
-    Section section =
+    CourseSection section =
         sections
             .findWithLockById(id)
             .orElseThrow(
@@ -155,7 +156,8 @@ public class SectionServiceImpl implements SectionService {
     return mapper.toResponse(section, enrolled);
   }
 
-  private void changeSchedule(Section section, SectionRequest request, List<MeetingTime> meetings) {
+  private void changeSchedule(
+      CourseSection section, CourseSectionRequest request, List<MeetingTime> meetings) {
     if (!section.getCourse().getId().equals(request.courseId())) {
       Course course = activeCourse(request.courseId());
       section.setCourse(course);
@@ -178,7 +180,7 @@ public class SectionServiceImpl implements SectionService {
   @Override
   @Transactional
   public void delete(Long id) {
-    Section section = find(id);
+    CourseSection section = find(id);
     if (section.getSemester().getStatus() != SemesterStatus.DRAFT) {
       throw notEditable("A section can only be deleted while its semester is a draft");
     }
@@ -187,7 +189,7 @@ public class SectionServiceImpl implements SectionService {
 
   @Override
   @Transactional(readOnly = true)
-  public List<SectionResponse> currentlyTaughtBy(Long professorId) {
+  public List<CourseSectionResponse> currentlyTaughtBy(Long professorId) {
     return sections
         .findByProfessorAndSemesterStatuses(
             professorId, EnumSet.of(SemesterStatus.READY, SemesterStatus.STARTED))
@@ -197,7 +199,7 @@ public class SectionServiceImpl implements SectionService {
   }
 
   /** The professor hears about a section they now teach, by email and in their inbox. */
-  private void tellProfessor(Section section) {
+  private void tellProfessor(CourseSection section) {
     String schedule =
         section.getMeetings().stream().map(MeetingTime::label).collect(Collectors.joining(", "))
             + (section.getRoom() == null || section.getRoom().isBlank()
@@ -241,7 +243,7 @@ public class SectionServiceImpl implements SectionService {
 
   private void checkProfessorIsFree(
       Professor professor, Semester semester, List<MeetingTime> meetings, Long ignoredSectionId) {
-    for (Section other :
+    for (CourseSection other :
         sections.findByProfessorIdAndSemesterId(professor.getId(), semester.getId())) {
       if (other.getId().equals(ignoredSectionId)) {
         continue;
@@ -306,7 +308,7 @@ public class SectionServiceImpl implements SectionService {
     return enrollments.countBySectionIdAndStatus(sectionId, EnrollmentStatus.ENROLLED);
   }
 
-  private Section find(Long id) {
+  private CourseSection find(Long id) {
     return sections
         .findById(id)
         .orElseThrow(() -> new NotFoundException(ErrorCode.SECTION_NOT_FOUND, "Section not found"));

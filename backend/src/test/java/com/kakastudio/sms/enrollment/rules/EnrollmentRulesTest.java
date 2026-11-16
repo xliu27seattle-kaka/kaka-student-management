@@ -18,7 +18,7 @@ import com.kakastudio.sms.enrollment.domain.Enrollment;
 import com.kakastudio.sms.enrollment.domain.EnrollmentStatus;
 import com.kakastudio.sms.grade.domain.StandardGradeScale;
 import com.kakastudio.sms.professor.domain.Professor;
-import com.kakastudio.sms.section.domain.Section;
+import com.kakastudio.sms.section.domain.CourseSection;
 import com.kakastudio.sms.semester.domain.Semester;
 import com.kakastudio.sms.semester.domain.SemesterStatus;
 import com.kakastudio.sms.student.domain.AcademicStatus;
@@ -40,7 +40,7 @@ class EnrollmentRulesTest {
   private final Course cs240 = course(4L, "CS240", 3);
   private final Student lena = student(1L);
 
-  private final Section cs201a =
+  private final CourseSection cs201a =
       section(
           10L,
           cs201,
@@ -50,7 +50,7 @@ class EnrollmentRulesTest {
           meeting(MONDAY, "10:00", "11:15"),
           meeting(WEDNESDAY, "10:00", "11:15"));
 
-  private EnrollmentContext context(Section target, long seatsTaken, Enrollment... history) {
+  private EnrollmentContext context(CourseSection target, long seatsTaken, Enrollment... history) {
     return new EnrollmentContext(lena, target, seatsTaken, List.of(history));
   }
 
@@ -82,18 +82,19 @@ class EnrollmentRulesTest {
 
   @Test
   void oneSectionPerCoursePerSemester() {
-    Section cs201b = section(11L, cs201, open, okafor, "B", meeting(TUESDAY, "10:00", "11:15"));
+    CourseSection cs201b =
+        section(11L, cs201, open, okafor, "B", meeting(TUESDAY, "10:00", "11:15"));
     Enrollment inB = enrollment(1L, lena, cs201b, EnrollmentStatus.ENROLLED, null);
-    assertThat(message(new SingleSectionRule().check(context(cs201a, 0, inB))))
+    assertThat(message(new SingleCourseSectionRule().check(context(cs201a, 0, inB))))
         .contains("Already enrolled in section CS201-B");
 
     Enrollment dropped = enrollment(2L, lena, cs201b, EnrollmentStatus.DROPPED, null);
-    assertThat(new SingleSectionRule().check(context(cs201a, 0, dropped))).isEmpty();
+    assertThat(new SingleCourseSectionRule().check(context(cs201a, 0, dropped))).isEmpty();
   }
 
   @Test
   void aPassedCourseCannotBeTakenAgainButAFailedOneCan() {
-    Section old = section(20L, cs201, past, okafor, "A");
+    CourseSection old = section(20L, cs201, past, okafor, "A");
     assertThat(
             message(
                 new CourseNotPassedRule(scale)
@@ -107,8 +108,8 @@ class EnrollmentRulesTest {
 
   @Test
   void everyPrerequisiteMustBePassedInAnEndedSemester() {
-    Section cs101old = section(21L, cs101, past, okafor, "A");
-    Section mathOld = section(22L, math120, past, okafor, "A");
+    CourseSection cs101old = section(21L, cs101, past, okafor, "A");
+    CourseSection mathOld = section(22L, math120, past, okafor, "A");
     PrerequisitesRule rule = new PrerequisitesRule(scale);
 
     assertThat(message(rule.check(context(cs201a, 0)))).contains("Requires CS101, MATH120");
@@ -135,7 +136,7 @@ class EnrollmentRulesTest {
 
   @Test
   void overlappingClassesAreNamedWithTheirDays() {
-    Section cs240a =
+    CourseSection cs240a =
         section(
             30L,
             cs240,
@@ -152,7 +153,8 @@ class EnrollmentRulesTest {
 
   @Test
   void classesTooCloseTogetherAskForTenMinutes() {
-    Section cs240a = section(30L, cs240, open, okafor, "A", meeting(MONDAY, "11:20", "12:00"));
+    CourseSection cs240a =
+        section(30L, cs240, open, okafor, "A", meeting(MONDAY, "11:20", "12:00"));
     Enrollment in240 = enrollment(1L, lena, cs240a, EnrollmentStatus.ENROLLED, null);
 
     assertThat(message(new ScheduleConflictRule().check(context(cs201a, 0, in240))))
@@ -161,8 +163,9 @@ class EnrollmentRulesTest {
 
   @Test
   void classesInOtherSemestersOrDroppedDoNotConflict() {
-    Section pastClash = section(31L, cs240, past, okafor, "A", meeting(MONDAY, "10:00", "11:00"));
-    Section droppedClash =
+    CourseSection pastClash =
+        section(31L, cs240, past, okafor, "A", meeting(MONDAY, "10:00", "11:00"));
+    CourseSection droppedClash =
         section(32L, cs240, open, okafor, "B", meeting(MONDAY, "10:00", "11:00"));
 
     assertThat(
@@ -180,7 +183,7 @@ class EnrollmentRulesTest {
   void aCourseTakenNowInAnotherSemesterCannotBeTakenAgain() {
     Semester running = semester(3L, "2026FA", SemesterStatus.STARTED);
     running.setName("Fall 2026");
-    Section now = section(40L, cs201, running, okafor, "B");
+    CourseSection now = section(40L, cs201, running, okafor, "B");
     Enrollment inProgress = enrollment(1L, lena, now, EnrollmentStatus.ENROLLED, null);
 
     assertThat(message(new CourseInProgressRule().check(context(cs201a, 0, inProgress))))
@@ -198,7 +201,7 @@ class EnrollmentRulesTest {
                 new PrerequisitesRule(scale),
                 new CourseInProgressRule(),
                 new CourseNotPassedRule(scale),
-                new SingleSectionRule(),
+                new SingleCourseSectionRule(),
                 new StudentEligibleRule(),
                 new SemesterOpenRule()));
     org.springframework.core.annotation.AnnotationAwareOrderComparator.sort(rules);
@@ -208,7 +211,7 @@ class EnrollmentRulesTest {
         .containsExactly(
             "SemesterOpenRule",
             "StudentEligibleRule",
-            "SingleSectionRule",
+            "SingleCourseSectionRule",
             "CourseNotPassedRule",
             "CourseInProgressRule",
             "PrerequisitesRule",

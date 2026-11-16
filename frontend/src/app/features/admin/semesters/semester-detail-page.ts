@@ -9,7 +9,7 @@ import { ConfirmOptions, ConfirmStore } from '../../../core/ui/confirm-store';
 import { HasUnsavedChanges } from '../../../core/guards/unsaved-changes-guard';
 import { ToastStore } from '../../../core/ui/toast-store';
 import { AdminApi } from '../../../shared/api/admin-api';
-import { Section, Semester, SemesterStatus } from '../../../shared/api/models';
+import { CourseSection, Semester, SemesterStatus } from '../../../shared/api/models';
 import { EmptyState } from '../../../shared/ui/empty-state';
 import { SkeletonRows } from '../../../shared/ui/skeleton-rows';
 import { statusLabel } from '../../../shared/ui/status';
@@ -95,7 +95,7 @@ export class SemesterDetailPage implements HasUnsavedChanges {
     switchMap(() => toLoadState(this.api.sections(Number(this.id())))),
   );
 
-  protected summary(section: Section): string {
+  protected summary(section: CourseSection): string {
     return meetingSummary(section.meetings);
   }
 

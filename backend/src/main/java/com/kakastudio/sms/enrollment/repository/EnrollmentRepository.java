@@ -38,10 +38,10 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
 
   /** Seats taken per section of one semester, in one query. */
   @Query(
-      "select new com.kakastudio.sms.enrollment.repository.SectionSeatCount(e.section.id, count(e))"
+      "select new com.kakastudio.sms.enrollment.repository.CourseSectionSeatCount(e.section.id, count(e))"
           + " from Enrollment e where e.section.semester.id = :semesterId and e.status = :status"
           + " group by e.section.id")
-  List<SectionSeatCount> countSeatsTaken(
+  List<CourseSectionSeatCount> countSeatsTaken(
       @Param("semesterId") Long semesterId, @Param("status") EnrollmentStatus status);
 
   /** Every enrollment of a student, with section, course, semester and professor loaded. */
@@ -70,7 +70,7 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
   @Modifying(flushAutomatically = true)
   @Query(
       "update Enrollment e set e.status = :to, e.updatedAt = :now where e.status = :from"
-          + " and e.section.id in (select s.id from Section s where s.semester.id = :semesterId)")
+          + " and e.section.id in (select s.id from CourseSection s where s.semester.id = :semesterId)")
   int completeEnrolled(
       @Param("semesterId") Long semesterId,
       @Param("from") EnrollmentStatus from,

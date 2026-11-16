@@ -134,7 +134,7 @@ export interface Meeting {
   label?: string;
 }
 
-export interface Section {
+export interface CourseSection {
   id: number;
   code: string;
   letter: string;
@@ -166,12 +166,12 @@ export interface RosterEntry {
   letterGrade: string | null;
 }
 
-export interface SectionDetail {
-  section: Section;
+export interface CourseSectionDetail {
+  section: CourseSection;
   roster: RosterEntry[];
 }
 
-export interface SectionRequest {
+export interface CourseSectionRequest {
   courseId: number;
   professorId: number;
   capacity: number | null;
@@ -186,7 +186,7 @@ export interface Reason {
 }
 
 export interface Offering {
-  section: Section;
+  section: CourseSection;
   available: boolean;
   reasons: Reason[];
   myEnrollmentId: number | null;
@@ -196,7 +196,7 @@ export interface Offering {
 export interface Enrollment {
   id: number;
   status: EnrollmentStatus;
-  section: Section;
+  section: CourseSection;
   score: number | null;
   letterGrade: string | null;
 }

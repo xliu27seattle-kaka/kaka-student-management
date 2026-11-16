@@ -13,11 +13,11 @@ import com.kakastudio.sms.grade.dto.GradeEntry;
 import com.kakastudio.sms.grade.service.GradingService;
 import com.kakastudio.sms.professor.domain.Professor;
 import com.kakastudio.sms.professor.repository.ProfessorRepository;
-import com.kakastudio.sms.section.domain.Section;
-import com.kakastudio.sms.section.dto.SectionDetail;
-import com.kakastudio.sms.section.dto.SectionResponse;
-import com.kakastudio.sms.section.mapper.SectionMapper;
-import com.kakastudio.sms.section.repository.SectionRepository;
+import com.kakastudio.sms.section.domain.CourseSection;
+import com.kakastudio.sms.section.dto.CourseSectionDetail;
+import com.kakastudio.sms.section.dto.CourseSectionResponse;
+import com.kakastudio.sms.section.mapper.CourseSectionMapper;
+import com.kakastudio.sms.section.repository.CourseSectionRepository;
 import com.kakastudio.sms.semester.domain.SemesterStatus;
 import com.kakastudio.sms.semester.service.SemesterLock;
 import java.util.EnumSet;
@@ -28,19 +28,19 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class GradingServiceImpl implements GradingService {
 
-  private final SectionRepository sections;
+  private final CourseSectionRepository sections;
   private final EnrollmentRepository enrollments;
   private final ProfessorRepository professors;
   private final GradeScale gradeScale;
-  private final SectionMapper mapper;
+  private final CourseSectionMapper mapper;
   private final SemesterLock semesterLock;
 
   public GradingServiceImpl(
-      SectionRepository sections,
+      CourseSectionRepository sections,
       EnrollmentRepository enrollments,
       ProfessorRepository professors,
       GradeScale gradeScale,
-      SectionMapper mapper,
+      CourseSectionMapper mapper,
       SemesterLock semesterLock) {
     this.sections = sections;
     this.enrollments = enrollments;
@@ -52,7 +52,7 @@ public class GradingServiceImpl implements GradingService {
 
   @Override
   @Transactional(readOnly = true)
-  public List<SectionResponse> mySections(Long professorUserId, Long semesterId) {
+  public List<CourseSectionResponse> mySections(Long professorUserId, Long semesterId) {
     Professor professor = professor(professorUserId);
     return sections
         .findByProfessorAndSemesterStatuses(
@@ -66,15 +66,15 @@ public class GradingServiceImpl implements GradingService {
 
   @Override
   @Transactional(readOnly = true)
-  public SectionDetail mySection(Long professorUserId, Long sectionId) {
-    Section section = ownSection(professorUserId, sectionId);
+  public CourseSectionDetail mySection(Long professorUserId, Long sectionId) {
+    CourseSection section = ownSection(professorUserId, sectionId);
     return detail(section);
   }
 
   @Override
   @Transactional
-  public SectionDetail grade(Long professorUserId, Long sectionId, List<GradeEntry> grades) {
-    Section section = ownSection(professorUserId, sectionId);
+  public CourseSectionDetail grade(Long professorUserId, Long sectionId, List<GradeEntry> grades) {
+    CourseSection section = ownSection(professorUserId, sectionId);
     semesterLock.forUse(section.getSemester()); // the semester cannot end while grades are saved
     if (section.getSemester().getStatus() != SemesterStatus.STARTED) {
       throw new RuleViolationException(
@@ -104,14 +104,14 @@ public class GradingServiceImpl implements GradingService {
     return detail(section);
   }
 
-  private SectionDetail detail(Section section) {
+  private CourseSectionDetail detail(CourseSection section) {
     return mapper.toDetail(
         section, enrollments.findRoster(section.getId()), enrolled(section.getId()));
   }
 
-  private Section ownSection(Long professorUserId, Long sectionId) {
+  private CourseSection ownSection(Long professorUserId, Long sectionId) {
     Professor professor = professor(professorUserId);
-    Section section =
+    CourseSection section =
         sections
             .findById(sectionId)
             .filter(s -> s.getSemester().getStatus().isVisibleToMembers())

@@ -1,7 +1,7 @@
 package com.kakastudio.sms.enrollment.rules;
 
 import com.kakastudio.sms.enrollment.domain.Enrollment;
-import com.kakastudio.sms.section.domain.Section;
+import com.kakastudio.sms.section.domain.CourseSection;
 import com.kakastudio.sms.student.domain.Student;
 import java.util.List;
 
@@ -12,7 +12,7 @@ import java.util.List;
  * @param history every enrollment of the student, in any semester and status
  */
 public record EnrollmentContext(
-    Student student, Section section, long seatsTaken, List<Enrollment> history) {
+    Student student, CourseSection section, long seatsTaken, List<Enrollment> history) {
 
   /** The student's other active seats in the same semester as the section. */
   public List<Enrollment> otherActiveSeatsThisSemester() {

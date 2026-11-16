@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { ProfessorProfile, Section } from '../api/models';
+import { ProfessorProfile, CourseSection } from '../api/models';
 import { meetingSummary } from './week-layout';
 
 /** A professor's public profile: portrait, introduction, expertise, experience, awards, teaching. */
@@ -172,14 +172,14 @@ import { meetingSummary } from './week-layout';
 export class ProfessorCard {
   readonly profile = input.required<ProfessorProfile>();
   /** What the professor teaches now; leave out to hide the section. */
-  readonly sections = input<Section[] | null>(null);
+  readonly sections = input<CourseSection[] | null>(null);
   readonly editLink = input<string | null>(null);
 
   protected readonly initials = computed(
     () => this.profile().firstName.charAt(0) + this.profile().lastName.charAt(0),
   );
 
-  protected summary(section: Section): string {
+  protected summary(section: CourseSection): string {
     return meetingSummary(section.meetings);
   }
 }

@@ -21,7 +21,7 @@ import com.kakastudio.sms.notification.message.domain.Notification;
 import com.kakastudio.sms.notification.message.repository.NotificationRecipientRepository;
 import com.kakastudio.sms.notification.message.repository.NotificationRepository;
 import com.kakastudio.sms.notification.message.service.impl.SystemNoticesImpl;
-import com.kakastudio.sms.section.domain.Section;
+import com.kakastudio.sms.section.domain.CourseSection;
 import com.kakastudio.sms.semester.domain.SemesterStatus;
 import com.kakastudio.sms.student.domain.AcademicStatus;
 import com.kakastudio.sms.student.domain.Student;
@@ -297,7 +297,7 @@ class StudentServiceImplTest {
   @Test
   void aStudentWithAnOpenOrRunningSeatCannotBeDeactivated() {
     Student student = stored(3L, UserStatus.ACTIVE);
-    Section section =
+    CourseSection section =
         Catalog.section(
             9L,
             Catalog.course(1L, "CS201", 3),

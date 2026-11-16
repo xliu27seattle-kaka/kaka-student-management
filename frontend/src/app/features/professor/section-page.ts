@@ -12,7 +12,7 @@ import {
 import { ConfirmStore } from '../../core/ui/confirm-store';
 import { ToastStore } from '../../core/ui/toast-store';
 import { ProfessorApi } from '../../shared/api/professor-api';
-import { RosterEntry, SectionDetail } from '../../shared/api/models';
+import { RosterEntry, CourseSectionDetail } from '../../shared/api/models';
 import { EmptyState } from '../../shared/ui/empty-state';
 import { SkeletonRows } from '../../shared/ui/skeleton-rows';
 import { StatusBadge } from '../../shared/ui/status-badge';
@@ -93,7 +93,7 @@ export class ProfessorSectionPage implements HasUnsavedChanges {
     this.tab$.next(tab);
   }
 
-  private fillGrades(detail: SectionDetail): void {
+  private fillGrades(detail: CourseSectionDetail): void {
     this.gradeRows = detail.roster.filter((r) => r.status === 'ENROLLED');
     this.grades.clear();
     for (const row of this.gradeRows) {
@@ -124,7 +124,7 @@ export class ProfessorSectionPage implements HasUnsavedChanges {
       .length;
   }
 
-  protected summary(detail: SectionDetail): string {
+  protected summary(detail: CourseSectionDetail): string {
     return meetingSummary(detail.section.meetings);
   }
 
@@ -158,7 +158,7 @@ export class ProfessorSectionPage implements HasUnsavedChanges {
     });
   }
 
-  protected send(detail: SectionDetail): void {
+  protected send(detail: CourseSectionDetail): void {
     if (this.message.invalid) {
       this.message.markAllAsTouched();
       return;
